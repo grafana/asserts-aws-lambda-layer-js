@@ -1,6 +1,7 @@
 import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
-import {Gauge, Counter, Histogram, register as globalRegistry, register as globalRegister} from "prom-client";
+import {Gauge, Counter, Histogram, register as globalRegistry, register as globalRegister, Registry} from "prom-client";
 import {mocked} from "ts-jest/utils";
+import {promisify} from "util";
 
 jest.mock('prom-client');
 
@@ -88,6 +89,7 @@ describe("Metrics should have been initialized", () => {
 
     const mockedCounter = mocked(Counter, true);
     const mockedHistogram = mocked(Histogram, true);
+    const mockedRegister = mocked(Registry, true);
     it("Invocation is recorded", () => {
         const metricInstance = new LambdaInstanceMetrics();
         metricInstance.recordInvocation();
@@ -112,4 +114,16 @@ describe("Metrics should have been initialized", () => {
         expect(mockedHistogram.prototype.observe).toHaveBeenCalledTimes(1);
         expect(mockedHistogram.prototype.observe).toHaveBeenCalledWith(10.0);
     });
+
+    /*  Need to figure out how to write this test.
+
+        it("Gets Metrics as text", async () => {
+            const mockMetricsMethod = jest.fn();
+            Registry.prototype.metrics = mockMetricsMethod;
+            const metricInstance = new LambdaInstanceMetrics();
+            metricInstance.setFunctionName("mock-function");
+            metricInstance.setFunctionVersion("1");
+            mockMetricsMethod.mockReturnValueOnce("metrics-text");
+            let result = await metricInstance.getAllMetricsAsText();
+        })*/
 });

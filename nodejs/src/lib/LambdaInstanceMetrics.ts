@@ -90,7 +90,8 @@ export class LambdaInstanceMetrics {
     async getAllMetricsAsText() {
         if (this.isNameAndVersionKnown()) {
             globalRegister.setDefaultLabels(this.labelValues);
-            return await globalRegister.metrics();
+            let text = await globalRegister.metrics();
+            return text;
         } else {
             let _func = async (): Promise<string> => {
                 return '';
