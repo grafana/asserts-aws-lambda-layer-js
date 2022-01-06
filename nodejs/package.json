@@ -1,0 +1,36 @@
+{
+  "name": "asserts-aws-lambda-layer",
+  "version": "1.0.0",
+  "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
+  "main": "index.js",
+  "dependencies": {
+    "prom-client": "14.0.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.86",
+    "@types/aws-sdk": "^2.7.0",
+    "@types/node": "^16.11.12",
+    "typescript": "^3.8.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asserts/asserts-aws-lambda-layer-js.git"
+  },
+  "keywords": [
+    "Asserts",
+    "Prometheus",
+    "AWS",
+    "Lambda",
+    "Layer",
+    "NodeJS"
+  ],
+  "author": "radhakrishnan@asserts.ai",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/asserts/asserts-aws-lambda-layer-js/issues"
+  },
+  "homepage": "https://github.com/asserts/asserts-aws-lambda-layer-js"
+}
