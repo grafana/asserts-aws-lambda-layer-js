@@ -4,7 +4,8 @@
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
   "main": "index.js",
   "dependencies": {
-    "prom-client": "14.0.1"
+    "prom-client": "14.0.1",
+    "tasktimer": "3.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.86",

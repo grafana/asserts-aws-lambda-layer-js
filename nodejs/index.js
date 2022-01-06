@@ -1,4 +1,4 @@
 'use strict';
-import { wrapHandler } from 'lib/AssertsMonitor.ts';
+import {wrapHandler, tryPatchHandler} from "./lib/HandlerWrapper";
 
-export default { wrapHandler };
+export { wrapHandler, tryPatchHandler };
