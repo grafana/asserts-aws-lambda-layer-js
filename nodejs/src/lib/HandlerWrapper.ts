@@ -180,7 +180,6 @@ export function wrapHandler<TEvent, TResult>(
         const start = Date.now();
         let error: boolean = false;
         try {
-            // We put the transaction on the scope so users can attach children to it
             if (!lambdaInstance.isFunctionContextSet()) {
                 lambdaInstance.setFunctionName(context.functionName);
                 lambdaInstance.setFunctionVersion(context.functionVersion);

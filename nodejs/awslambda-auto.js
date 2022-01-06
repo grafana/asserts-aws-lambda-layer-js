@@ -1,4 +1,4 @@
-import * as AssertsSDK from './index';
+import * as AssertsSDK from './src';
 
 const lambdaTaskRoot = process.env.LAMBDA_TASK_ROOT;
 if (lambdaTaskRoot) {

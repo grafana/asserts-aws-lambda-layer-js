@@ -1,12 +1,12 @@
 import {collectDefaultMetrics, Counter, Gauge, Histogram, register as globalRegister} from 'prom-client';
-import { hostname } from 'os';
+import {hostname} from 'os';
 
-let labelNames = ['job', 'function_name', 'version', 'instance', 'namespace'];
 collectDefaultMetrics({
     gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5], // These are the default buckets.
 });
 
 export class LambdaInstanceMetrics {
+    labelNames: string[] = ['function_name', 'instance', 'job', 'namespace', 'version'];
     invocations: Counter<string>;
     errors: Counter<string>;
     up: Gauge<string>;
@@ -24,7 +24,7 @@ export class LambdaInstanceMetrics {
             name: 'up',
             help: `Heartbeat metric`,
             registers: [globalRegister],
-            labelNames: labelNames
+            labelNames: this.labelNames
         });
         globalRegister.registerMetric(this.up);
 
@@ -32,7 +32,7 @@ export class LambdaInstanceMetrics {
             name: 'aws_lambda_invocations_total',
             help: `AWS Lambda Invocations Count`,
             registers: [globalRegister],
-            labelNames: labelNames
+            labelNames: this.labelNames
         });
         globalRegister.registerMetric(this.invocations);
 
@@ -40,7 +40,7 @@ export class LambdaInstanceMetrics {
             name: 'aws_lambda_errors_total',
             help: `AWS Lambda Errors Count`,
             registers: [globalRegister],
-            labelNames: labelNames
+            labelNames: this.labelNames
         });
         globalRegister.registerMetric(this.errors);
 
@@ -48,7 +48,7 @@ export class LambdaInstanceMetrics {
             name: 'aws_lambda_duration_seconds',
             help: `AWS Lambda Duration Histogram`,
             registers: [globalRegister],
-            labelNames: labelNames
+            labelNames: this.labelNames
         });
         globalRegister.registerMetric(this.latency);
 
@@ -59,8 +59,8 @@ export class LambdaInstanceMetrics {
 
     }
 
-    isFunctionContextSet() : boolean {
-        if(this.labelValues.function_name && this.labelValues.version) {
+    isFunctionContextSet(): boolean {
+        if (this.labelValues.function_name && this.labelValues.version) {
             return true;
         }
         return false;
