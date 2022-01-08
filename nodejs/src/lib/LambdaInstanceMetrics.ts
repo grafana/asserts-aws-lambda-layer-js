@@ -6,7 +6,8 @@ collectDefaultMetrics({
 });
 
 export class LambdaInstanceMetrics {
-    labelNames: string[] = ['asserts_source', 'function_name', 'instance', 'job', 'namespace', 'version'];
+    labelNames: string[] = [
+        'asserts_source', 'asserts_tenant', 'function_name', 'instance', 'job', 'namespace', 'tenant', 'version'];
     invocations: Counter<string>;
     errors: Counter<string>;
     up: Gauge<string>;
@@ -18,6 +19,8 @@ export class LambdaInstanceMetrics {
         instance: string;
         namespace: string;
         asserts_source: string;
+        asserts_tenant?: string;
+        tenant?: string;
     };
 
     private static singleton: LambdaInstanceMetrics = new LambdaInstanceMetrics();
@@ -74,6 +77,11 @@ export class LambdaInstanceMetrics {
 
     setFunctionVersion(version: string): void {
         this.labelValues.version = version;
+    }
+
+    setTenant(tenant: string): void {
+        this.labelValues.asserts_tenant = tenant;
+        this.labelValues.tenant = tenant;
     }
 
     recordLatency(latency: number): void {

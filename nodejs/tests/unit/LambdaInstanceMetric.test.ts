@@ -14,7 +14,9 @@ describe("Metrics should have been initialized", () => {
     it("Label names are initialised", () => {
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelNames)
-            .toStrictEqual(['asserts_source', 'function_name', 'instance', 'job', 'namespace', 'version']);
+            .toStrictEqual([
+                'asserts_source', 'asserts_tenant',
+                'function_name', 'instance', 'job', 'namespace', 'tenant', 'version']);
     });
 
     it("Label values are initialised", () => {
@@ -25,6 +27,13 @@ describe("Metrics should have been initialized", () => {
         expect(lambdaInstance.labelValues.function_name).toBeFalsy();
         expect(lambdaInstance.labelValues.job).toBeFalsy();
         expect(lambdaInstance.labelValues.version).toBeFalsy();
+    });
+
+    it("Tenant labels are initialised", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
+        lambdaInstance.setTenant("tenant");
+        expect(lambdaInstance.labelValues.tenant).toBe("tenant");
+        expect(lambdaInstance.labelValues.asserts_tenant).toBe("tenant");
     });
 
     it("Gauge for up metric is created", () => {
