@@ -14,6 +14,7 @@ export class RemoteWriter {
     cancelled: boolean = false;
 
     constructor() {
+        this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
         this.remoteWriteConfig = {
             remoteWriteURL: process.env["ASSERTS_REMOTE_WRITE_URL"],
             tenantName: process.env["ASSERTS_TENANT_NAME"],
@@ -23,10 +24,10 @@ export class RemoteWriter {
         if (this.remoteWriteConfig.remoteWriteURL !== 'undefined' &&
             this.remoteWriteConfig.tenantName !== 'undefined' && this.remoteWriteConfig.password !== 'undefined') {
             this.remoteWriteConfig.isComplete = true;
+            this.lambdaInstance.setTenant((this.remoteWriteConfig.tenantName as (string)));
         } else {
             this.remoteWriteConfig.isComplete = false;
         }
-        this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
         if (this.remoteWriteConfig.isComplete) {
             this.taskTimer = new TaskTimer(15_000);
 
@@ -81,11 +82,13 @@ export class RemoteWriter {
     responseCallback(res: any) {
         console.log(`POST Asserts Metric API statusCode: ${res.statusCode}`);
         if (res.statusCode!.toString() === "400") {
-            console.log(res.toString());
+            console.log("Response: " + JSON.stringify(res));
         }
-        res.on('data', function (data: any) {
-            console.log(data);
-        });
+        res.on('data', this.responseDataHandler);
+    }
+
+    responseDataHandler(data: any) {
+        console.log('POST to Asserts Metric API returned: ' + data.toString());
     }
 
     requestErrorHandler(error: any) {

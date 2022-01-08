@@ -8,16 +8,16 @@ jest.mock('https', () => require('../../tests/__mocks__/https'));
 describe("Handler Wrapper works for async and sync", () => {
     const mockIsSet: jest.Mock = jest.fn();
     const mockGetMetrics: jest.Mock = jest.fn();
+    const mockSetTenant: jest.Mock = jest.fn();
+
     const realFlushMetrics = RemoteWriter.prototype.flushMetrics;
     const realWriteMetrics = RemoteWriter.prototype.writeMetrics;
-    const realDataHandler = function (data: any) {
-        console.log(data);
-    };
     const realErrorHandler = RemoteWriter.prototype.requestErrorHandler;
     const realOn = TaskTimer.prototype.on;
 
     LambdaInstanceMetrics.prototype.isNameAndVersionSet = mockIsSet;
     LambdaInstanceMetrics.prototype.getAllMetricsAsText = mockGetMetrics;
+    LambdaInstanceMetrics.prototype.setTenant = mockSetTenant;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -75,6 +75,7 @@ describe("Handler Wrapper works for async and sync", () => {
 
         const remoteWriter: RemoteWriter = new RemoteWriter();
         expect(remoteWriter.isRemoteWritingOn()).toBe(true);
+        expect(mockSetTenant).toHaveBeenCalledWith("tenantName");
         expect(mockedOn).toHaveBeenCalledWith('tick', mockedFlushMetrics);
     });
 
@@ -202,5 +203,31 @@ describe("Handler Wrapper works for async and sync", () => {
 
         expect(mockedGetAllMetrics).not.toHaveBeenCalled();
         expect(mockedRequest).not.toHaveBeenCalled();
+    });
+
+    it("Test responseCallback", async () => {
+        process.env["ASSERTS_REMOTE_WRITE_URL"] = "url";
+        process.env["ASSERTS_TENANT_NAME"] = "tenantName";
+        process.env["ASSERTS_PASSWORD"] = "tenantPassword";
+
+        // Mock flushMetrics to avoid real call;
+        const mockedOn = jest.fn();
+        const mockedFlushMetrics = jest.fn();
+
+        RemoteWriter.prototype.flushMetrics = mockedFlushMetrics;
+        TaskTimer.prototype.on = mockedOn;
+
+        const remoteWriter: RemoteWriter = new RemoteWriter();
+        expect(mockedOn).toHaveBeenCalledWith('tick', mockedFlushMetrics);
+
+        const mockRes = {
+            statusCode: "400",
+            on: jest.fn()
+        };
+        remoteWriter.responseCallback(mockRes);
+        expect(mockRes.on).toHaveBeenCalledWith("data", RemoteWriter.prototype.responseDataHandler);
+
+        remoteWriter.responseDataHandler({});
+        remoteWriter.requestErrorHandler(new Error());
     });
 });
