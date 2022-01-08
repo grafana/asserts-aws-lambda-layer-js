@@ -230,4 +230,9 @@ describe("Handler Wrapper works for async and sync", () => {
         remoteWriter.responseDataHandler({});
         remoteWriter.requestErrorHandler(new Error());
     });
+
+    it("Calling cancel when timer not set", async () => {
+        const remoteWriter: RemoteWriter = new RemoteWriter();
+        remoteWriter.cancel();
+    });
 });
