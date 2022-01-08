@@ -5,14 +5,20 @@ import {mocked} from "jest-mock";
 jest.mock('prom-client');
 
 describe("Metrics should have been initialized", () => {
-    const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
+
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    })
 
     it("Label names are initialised", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelNames)
-            .toStrictEqual(['function_name', 'instance', 'job', 'namespace', 'version']);
+            .toStrictEqual(['asserts_source', 'function_name', 'instance', 'job', 'namespace', 'version']);
     });
 
     it("Label values are initialised", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelValues).toBeTruthy();
         expect(lambdaInstance.labelValues.instance).toBeTruthy();
         expect(lambdaInstance.labelValues.namespace).toBe("AWS/Lambda");
@@ -22,6 +28,7 @@ describe("Metrics should have been initialized", () => {
     });
 
     it("Gauge for up metric is created", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(Gauge).toHaveBeenCalledTimes(1);
         expect(Gauge).toHaveBeenCalledWith({
             name: 'up',
@@ -32,10 +39,12 @@ describe("Metrics should have been initialized", () => {
     });
 
     it("Gauge metric up is initialised", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.up).toBeInstanceOf(Gauge);
     });
 
     it("Counters for invocations and errors are created", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(Counter).toBeCalledTimes(2);
         expect(Counter).toHaveBeenCalledWith({
             name: 'aws_lambda_invocations_total',
@@ -52,14 +61,17 @@ describe("Metrics should have been initialized", () => {
     });
 
     it("Counter metric for invocations is initialised", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.invocations).toBeInstanceOf(Counter);
     });
 
     it("Counter metric for errors is initialised", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.errors).toBeInstanceOf(Counter);
     });
 
     it("Histogram for duration is created", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(Histogram).toBeCalledTimes(1);
         expect(Histogram).toHaveBeenCalledWith({
             name: 'aws_lambda_duration_seconds',
@@ -70,17 +82,20 @@ describe("Metrics should have been initialized", () => {
     });
 
     it("Histogram metric for latency is initialised", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.latency).toBeInstanceOf(Histogram);
     });
 
     it("Function context is not initialised yet", () => {
-        expect(lambdaInstance.isFunctionContextSet()).toBe(false);
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
+        expect(lambdaInstance.isNameAndVersionSet()).toBe(false);
     });
 
     it("Function context is initialised and label values are updated", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         lambdaInstance.setFunctionName("OrderProcessor");
         lambdaInstance.setFunctionVersion("1");
-        expect(lambdaInstance.isFunctionContextSet()).toBe(true);
+        expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor");
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor");
         expect(lambdaInstance.labelValues.version).toBe("1");
@@ -100,7 +115,7 @@ describe("Metrics should have been initialized", () => {
         const metricInstance = new LambdaInstanceMetrics();
         metricInstance.recordError();
         expect(metricInstance.errors).toBeInstanceOf(mockedCounter);
-        expect(mockedCounter.prototype.inc).toHaveBeenCalledTimes(2);
+        expect(mockedCounter.prototype.inc).toHaveBeenCalledTimes(1);
         expect(mockedCounter.prototype.inc).toHaveBeenCalledWith(1);
         expect(mockedCounter.prototype.inc).toHaveBeenCalledWith(1);
     });
@@ -113,7 +128,7 @@ describe("Metrics should have been initialized", () => {
         expect(mockedHistogram.prototype.observe).toHaveBeenCalledWith(10.0);
     });
 
-    it("Gets Metrics as text", async () => {
+    it("Gets Metrics as text not null", async () => {
         const mockedRegistry = mocked(Registry, true);
         const metricInstance = new LambdaInstanceMetrics();
         metricInstance.setFunctionName("mock-function");
@@ -123,5 +138,12 @@ describe("Metrics should have been initialized", () => {
         });
         let result = await metricInstance.getAllMetricsAsText();
         expect(result).toBe("metrics-text");
+    })
+
+    it("Gets Metrics as text returns null", async () => {
+        const mockedRegistry = mocked(Registry, true);
+        const metricInstance = new LambdaInstanceMetrics();
+        let result = await metricInstance.getAllMetricsAsText();
+        expect(result).toBeNull();
     })
 });

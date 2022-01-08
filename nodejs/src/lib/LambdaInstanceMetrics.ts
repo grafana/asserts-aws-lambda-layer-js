@@ -6,7 +6,7 @@ collectDefaultMetrics({
 });
 
 export class LambdaInstanceMetrics {
-    labelNames: string[] = ['function_name', 'instance', 'job', 'namespace', 'version'];
+    labelNames: string[] = ['asserts_source', 'function_name', 'instance', 'job', 'namespace', 'version'];
     invocations: Counter<string>;
     errors: Counter<string>;
     up: Gauge<string>;
@@ -15,9 +15,12 @@ export class LambdaInstanceMetrics {
         job?: string;
         function_name?: string;
         version?: string;
-        instance?: string;
-        namespace?: string;
+        instance: string;
+        namespace: string;
+        asserts_source: string;
     };
+
+    private static singleton: LambdaInstanceMetrics = new LambdaInstanceMetrics();
 
     constructor() {
         this.up = new Gauge({
@@ -54,16 +57,14 @@ export class LambdaInstanceMetrics {
 
         this.labelValues = {
             namespace: "AWS/Lambda",
-            instance: hostname()
+            instance: hostname(),
+            asserts_source: 'prom-client'
         };
 
     }
 
-    isFunctionContextSet(): boolean {
-        if (this.labelValues.function_name && this.labelValues.version) {
-            return true;
-        }
-        return false;
+    static getSingleton(): LambdaInstanceMetrics {
+        return this.singleton;
     }
 
     setFunctionName(name: string): void {
@@ -88,19 +89,16 @@ export class LambdaInstanceMetrics {
     }
 
     async getAllMetricsAsText() {
-        if (this.isNameAndVersionKnown()) {
+        if (this.isNameAndVersionSet()) {
             globalRegister.setDefaultLabels(this.labelValues);
             let text = await globalRegister.metrics();
             return text;
         } else {
-            let _func = async (): Promise<string> => {
-                return '';
-            };
-            return _func();
+            return Promise.resolve(null);
         }
     }
 
-    isNameAndVersionKnown(): boolean {
+    isNameAndVersionSet(): boolean {
         return !!(this.labelValues.job && this.labelValues.function_name && this.labelValues.version);
     }
 }
