@@ -1,68 +1,95 @@
 import {LambdaInstanceMetrics} from './LambdaInstanceMetrics';
 import {request} from 'https';
+import {TaskTimer} from "tasktimer";
 
 export class RemoteWriter {
-    config: {
-        remoteWriteURL: string;
-        tenantName: string;
-        password: string;
-        remoteWriteConfigComplete: boolean;
+    remoteWriteConfig: {
+        remoteWriteURL?: string | undefined;
+        tenantName?: string | undefined;
+        password?: string | undefined;
+        isComplete: boolean;
     }
     lambdaInstance: LambdaInstanceMetrics;
+    taskTimer?: TaskTimer;
+    cancelled: boolean = false;
 
-    constructor(theMetrics: LambdaInstanceMetrics) {
-        this.config = {
-            remoteWriteURL: process.env["ASSERTS_REMOTE_WRITE_URL"] ? process.env["ASSERTS_REMOTE_WRITE_URL"] : "NONE",
-            tenantName: process.env["ASSERTS_TENANT_NAME"] ? process.env["ASSERTS_TENANT_NAME"] : "NONE",
-            password: process.env["ASSERTS_PASSWORD"] ? process.env["ASSERTS_PASSWORD"] : "NONE",
-            remoteWriteConfigComplete: false
+    constructor() {
+        this.remoteWriteConfig = {
+            remoteWriteURL: process.env["ASSERTS_REMOTE_WRITE_URL"],
+            tenantName: process.env["ASSERTS_TENANT_NAME"],
+            password: process.env["ASSERTS_PASSWORD"],
+            isComplete: false
         };
-        this.config.remoteWriteConfigComplete = this.config.remoteWriteURL != "NONE" &&
-            this.config.tenantName != "NONE" && this.config.password != "NONE"
-        this.lambdaInstance = theMetrics;
+        if (this.remoteWriteConfig.remoteWriteURL !== 'undefined' &&
+            this.remoteWriteConfig.tenantName !== 'undefined' && this.remoteWriteConfig.password !== 'undefined') {
+            this.remoteWriteConfig.isComplete = true;
+        } else {
+            this.remoteWriteConfig.isComplete = false;
+        }
+        this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
+        if (this.remoteWriteConfig.isComplete) {
+            this.taskTimer = new TaskTimer(15_000);
+
+            // 'tick' will happen every 15 seconds
+            this.taskTimer.on('tick', this.flushMetrics);
+        }
+    }
+
+    isRemoteWritingOn(): boolean {
+        return this.remoteWriteConfig.isComplete && !this.cancelled;
+    }
+
+    async flushMetrics() {
+        if (!this.cancelled) {
+            await this.writeMetrics();
+        }
+    }
+
+    cancel(): void {
+        this.cancelled = true;
+        this.taskTimer?.removeListener('tick', this.flushMetrics);
     }
 
     // This will have to be invoked once every 15 seconds. We should probably use the NodeJS Timer for this
-    async pushMetrics() {
-        if (this.config.remoteWriteConfigComplete) {
+    async writeMetrics() {
+        if (this.isRemoteWritingOn()) {
             let text = await this.lambdaInstance.getAllMetricsAsText();
-            if (text !== '') {
+            if (text != null) {
                 const options = {
-                    hostname: this.config.remoteWriteURL,
+                    hostname: this.remoteWriteConfig.remoteWriteURL,
                     port: 443,
                     path: '/api/v1/import/prometheus',
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Basic ' + Buffer.from(this.config.tenantName + ':' + this.config.password).toString('base64'),
+                        'Authorization': 'Basic ' + Buffer.from(this.remoteWriteConfig.tenantName + ':' + this.remoteWriteConfig.password).toString('base64'),
                         'Content-Type': 'text/plain',
                         'Content-Length': text.length
                     }
                 };
-
-                const req = request(options, res => {
-                    console.log(`POST Asserts Metric API statusCode: ${res.statusCode}`);
-
-                    if (res.statusCode!.toString() === "400") {
-                        console.log(res.toString());
-                    }
-
-                    res.on('data', d => {
-                        process.stdout.write(d);
-                    })
-                })
-
-
-                req.on('error', error => {
-                    console.error('POST to Asserts Metric API resulted in an error: ' + error.toString());
-                })
-
+                const req = request(options, this.responseCallback)
+                req.on('error', this.requestErrorHandler);
                 req.write(text);
                 req.end();
             } else {
-                console.log("Function name not known yet");
+                console.log("Function name and version not known yet. Probably no invocations yet");
             }
         } else {
-            console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(this.config));
+            console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(this.remoteWriteConfig));
         }
     }
+
+    responseCallback(res: any) {
+        console.log(`POST Asserts Metric API statusCode: ${res.statusCode}`);
+        if (res.statusCode!.toString() === "400") {
+            console.log(res.toString());
+        }
+        res.on('data', function (data: any) {
+            console.log(data);
+        });
+    }
+
+    requestErrorHandler(error: any) {
+        console.error('POST to Asserts Metric API resulted in an error: ' + error.toString());
+    }
 }
+
