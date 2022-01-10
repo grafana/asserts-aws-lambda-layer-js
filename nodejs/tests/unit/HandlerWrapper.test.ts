@@ -1,7 +1,6 @@
 import {Context, SQSEvent, Callback} from 'aws-lambda';
 import * as AssertsSDK from "../../src/lib/HandlerWrapper";
 import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
-import exp from "constants";
 
 describe("Handler Wrapper works for async and sync", () => {
     const mockSetVersion: jest.Mock = jest.fn();
@@ -33,14 +32,14 @@ describe("Handler Wrapper works for async and sync", () => {
         logGroupName: "/aws/lambda/OrderProcessor",
         logStreamName: "2021/12/15/[1]2c5c0093943942a0bff9a07717274beb",
         memoryLimitInMB: "128",
-        done(error?: Error, result?: any): void {
+        done(): void {
         },
-        fail(error: Error | string): void {
+        fail(): void {
         },
         getRemainingTimeInMillis(): number {
             return 0;
         },
-        succeed(messageOrObject: any, object?: any): void {
+        succeed() {
         }
     };
 
@@ -198,7 +197,7 @@ describe("Handler Wrapper works for async and sync", () => {
         let wrapHandler: void = AssertsSDK.wrapHandler(handlerWithResolution);
 
         // @ts-ignore
-        const rv: void = await wrapHandler(sqsEvent, context, callbackForSyncHandler);
+        await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
         expect(mockIsSet).toHaveBeenCalledTimes(1);
         expect(mockSetName).toHaveBeenCalledTimes(1);
@@ -234,7 +233,7 @@ describe("Handler Wrapper works for async and sync", () => {
         });
 
         // @ts-ignore
-        const rv: void = await wrapHandler(sqsEvent, context, callbackForSyncHandler);
+        await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
         expect(mockIsSet).toHaveBeenCalledTimes(1);
         expect(mockSetName).toHaveBeenCalledTimes(1);
@@ -270,7 +269,7 @@ describe("Handler Wrapper works for async and sync", () => {
         });
 
         // @ts-ignore
-        const rv: void = await wrapHandler(sqsEvent, context, callbackForSyncHandler);
+        await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
         expect(mockIsSet).toHaveBeenCalledTimes(1);
         expect(mockSetName).toHaveBeenCalledTimes(1);
@@ -306,7 +305,7 @@ describe("Handler Wrapper works for async and sync", () => {
         });
 
         // @ts-ignore
-        const rv: void = await wrapHandler(sqsEvent, context, callbackForSyncHandler);
+        await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
         expect(mockIsSet).toHaveBeenCalledTimes(1);
         expect(mockSetName).toHaveBeenCalledTimes(1);

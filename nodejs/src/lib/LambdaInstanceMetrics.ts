@@ -7,11 +7,12 @@ collectDefaultMetrics({
 
 export class LambdaInstanceMetrics {
     labelNames: string[] = [
-        'asserts_source', 'asserts_tenant', 'function_name', 'instance', 'job', 'namespace', 'tenant', 'version'];
+        'asserts_source', 'asserts_tenant', 'function_name', 'instance', 'job', 'namespace', 'region', 'tenant', 'version'];
     invocations: Counter<string>;
     errors: Counter<string>;
     up: Gauge<string>;
     latency: Histogram<string>;
+    memoryLimitMb: Gauge<string>;
     labelValues: {
         job?: string;
         function_name?: string;
@@ -21,6 +22,7 @@ export class LambdaInstanceMetrics {
         asserts_source: string;
         asserts_tenant?: string;
         tenant?: string;
+        region: string | undefined;
     };
 
     private static singleton: LambdaInstanceMetrics = new LambdaInstanceMetrics();
@@ -58,10 +60,19 @@ export class LambdaInstanceMetrics {
         });
         globalRegister.registerMetric(this.latency);
 
+        this.memoryLimitMb = new Gauge({
+            name: 'aws_lambda_memory_limit_mb',
+            help: `AWS Lambda Memory Limit in MB`,
+            registers: [globalRegister],
+            labelNames: this.labelNames
+        });
+        globalRegister.registerMetric(this.memoryLimitMb);
+
         this.labelValues = {
             namespace: "AWS/Lambda",
             instance: hostname(),
-            asserts_source: 'prom-client'
+            asserts_source: 'prom-client',
+            region: process.env['AWS_REGION']
         };
 
     }
@@ -96,11 +107,20 @@ export class LambdaInstanceMetrics {
         this.invocations.inc(1);
     }
 
+    recordLatestMemoryLimit(): void {
+        if (process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"]) {
+            const memoryLimit = Number(process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"]);
+            if (!isNaN(memoryLimit)) {
+                this.memoryLimitMb.set(memoryLimit);
+            }
+        }
+    }
+
     async getAllMetricsAsText() {
+        this.recordLatestMemoryLimit();
         if (this.isNameAndVersionSet()) {
             globalRegister.setDefaultLabels(this.labelValues);
-            let text = await globalRegister.metrics();
-            return text;
+            return await globalRegister.metrics();
         } else {
             return Promise.resolve(null);
         }
