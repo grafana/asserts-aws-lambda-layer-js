@@ -3,23 +3,16 @@ import * as AssertsSDK from "../../src/lib/HandlerWrapper";
 import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
 
 describe("Handler Wrapper works for async and sync", () => {
-    const mockSetVersion: jest.Mock = jest.fn();
-    const mockIsSet: jest.Mock = jest.fn();
-    const mockSetName: jest.Mock = jest.fn();
     const mockRecordInvocation: jest.Mock = jest.fn();
     const mockRecordError: jest.Mock = jest.fn();
     const mockRecordLatency: jest.Mock = jest.fn();
 
-    LambdaInstanceMetrics.prototype.isNameAndVersionSet = mockIsSet;
-    LambdaInstanceMetrics.prototype.setFunctionVersion = mockSetVersion;
-    LambdaInstanceMetrics.prototype.setFunctionName = mockSetName;
     LambdaInstanceMetrics.prototype.recordInvocation = mockRecordInvocation;
     LambdaInstanceMetrics.prototype.recordLatency = mockRecordLatency;
     LambdaInstanceMetrics.prototype.recordError = mockRecordError;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        mockIsSet.mockReturnValueOnce(false);
     });
     const sqsEvent: SQSEvent = {} as any;
 
@@ -62,12 +55,6 @@ describe("Handler Wrapper works for async and sync", () => {
         const actualResult = await wrapHandler(sqsEvent, context);
         expect(actualResult).toStrictEqual(expectedResult);
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).not.toHaveBeenCalled();
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);
@@ -88,12 +75,6 @@ describe("Handler Wrapper works for async and sync", () => {
         // @ts-ignore
         await wrapHandler(sqsEvent, context);
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).toHaveBeenCalledTimes(1);
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);
@@ -116,12 +97,6 @@ describe("Handler Wrapper works for async and sync", () => {
         } catch (e) {
         }
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).toHaveBeenCalledTimes(1);
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);
@@ -141,12 +116,6 @@ describe("Handler Wrapper works for async and sync", () => {
         const actualResult = await wrapHandler(sqsEvent, context);
         expect(actualResult).toStrictEqual(expectedResult);
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).not.toHaveBeenCalled();
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);
@@ -167,12 +136,6 @@ describe("Handler Wrapper works for async and sync", () => {
         // @ts-ignore
         await wrapHandler(sqsEvent, context);
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).toHaveBeenCalledTimes(1);
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);
@@ -180,7 +143,7 @@ describe("Handler Wrapper works for async and sync", () => {
 
     it("Successful wrapping and metrics capture for sync handler with a callback that is resolved", async () => {
         const callbackForSyncHandler: jest.Mock = jest.fn();
-        mockIsSet.mockReturnValueOnce(false);
+        
 
         const sideEffect: string[] = [];
 
@@ -199,12 +162,6 @@ describe("Handler Wrapper works for async and sync", () => {
         // @ts-ignore
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).not.toHaveBeenCalled();
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);
@@ -214,7 +171,7 @@ describe("Handler Wrapper works for async and sync", () => {
 
     it("Successful wrapping and metrics capture for sync handler with a callback that is rejected", async () => {
         const callbackForSyncHandler: jest.Mock = jest.fn();
-        mockIsSet.mockReturnValueOnce(false);
+        
 
         const sideEffect: string[] = [];
 
@@ -235,12 +192,6 @@ describe("Handler Wrapper works for async and sync", () => {
         // @ts-ignore
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).toHaveBeenCalledTimes(1);
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);
@@ -250,7 +201,7 @@ describe("Handler Wrapper works for async and sync", () => {
 
     it("Successful wrapping and metrics capture for sync handler with a callback resulting in error", async () => {
         const callbackForSyncHandler: jest.Mock = jest.fn();
-        mockIsSet.mockReturnValueOnce(false);
+        
 
         const sideEffect: string[] = [];
 
@@ -271,12 +222,6 @@ describe("Handler Wrapper works for async and sync", () => {
         // @ts-ignore
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).toHaveBeenCalledTimes(1);
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);
@@ -286,7 +231,7 @@ describe("Handler Wrapper works for async and sync", () => {
 
     it("Successful wrapping and metrics capture for async handler returning a promise !", async () => {
         const callbackForSyncHandler: jest.Mock = jest.fn();
-        mockIsSet.mockReturnValueOnce(false);
+        
 
         const sideEffect: string[] = [];
 
@@ -307,12 +252,6 @@ describe("Handler Wrapper works for async and sync", () => {
         // @ts-ignore
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
-        expect(mockIsSet).toHaveBeenCalledTimes(1);
-        expect(mockSetName).toHaveBeenCalledTimes(1);
-        expect(mockSetName.mock.calls[0].length).toBe(1);
-        expect(mockSetName.mock.calls[0][0]).toBe(context.functionName);
-        expect(mockSetVersion.mock.calls[0].length).toBe(1);
-        expect(mockSetVersion.mock.calls[0][0]).toBe(context.functionVersion);
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).not.toHaveBeenCalled();
         expect(mockRecordLatency).toHaveBeenCalledTimes(1);

@@ -29,6 +29,8 @@ export interface WrapperOptions {
     captureAllSettledReasons: boolean;
 }
 
+const lambdaMetrics: LambdaInstanceMetrics = LambdaInstanceMetrics.getSingleton();
+
 /**
  * Wraps a lambda handler adding it error capture and tracing capabilities.
  *
@@ -83,11 +85,7 @@ export function wrapHandler<TEvent, TResult>(
         const start = Date.now();
         let error: boolean = false;
         try {
-            if (!LambdaInstanceMetrics.getSingleton().isNameAndVersionSet()) {
-                LambdaInstanceMetrics.getSingleton().setFunctionName(context.functionName);
-                LambdaInstanceMetrics.getSingleton().setFunctionVersion(context.functionVersion);
-            }
-            LambdaInstanceMetrics.getSingleton().recordInvocation();
+            lambdaMetrics.recordInvocation();
             rv = await asyncHandler(event, context);
         } catch (e) {
             error = true;
@@ -96,9 +94,9 @@ export function wrapHandler<TEvent, TResult>(
             }
         } finally {
             const end = Date.now();
-            LambdaInstanceMetrics.getSingleton().recordLatency((end - start) / 1000);
+            lambdaMetrics.recordLatency((end - start) / 1000);
             if (error) {
-                LambdaInstanceMetrics.getSingleton().recordError();
+                lambdaMetrics.recordError();
             }
         }
         return rv;
