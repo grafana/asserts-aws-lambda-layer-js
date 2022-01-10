@@ -8,8 +8,9 @@ describe("Metrics should have been initialized", () => {
 
 
     beforeEach(() => {
-        process.env["AWS_LAMBDA_FUNCTION_MEMOR" +
-        "Y_SIZE"] = "128";
+        process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"] = "128";
+        process.env["AWS_LAMBDA_FUNCTION_NAME"] = "OrderProcessor";
+        process.env["AWS_LAMBDA_FUNCTION_VERSION"] = "1";
         process.env["AWS_REGION"] = "us-west-2";
         jest.clearAllMocks();
     })
@@ -29,9 +30,18 @@ describe("Metrics should have been initialized", () => {
         expect(lambdaInstance.labelValues.instance).toBeTruthy();
         expect(lambdaInstance.labelValues.namespace).toBe("AWS/Lambda");
         expect(lambdaInstance.labelValues.region).toBe("us-west-2");
-        expect(lambdaInstance.labelValues.function_name).toBeFalsy();
-        expect(lambdaInstance.labelValues.job).toBeFalsy();
-        expect(lambdaInstance.labelValues.version).toBeFalsy();
+        expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")
+        expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
+        expect(lambdaInstance.labelValues.version).toBe("1");
+        expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
+    });
+
+    it("Function context is not initialised yet", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
+        lambdaInstance.labelValues.job = undefined;
+        lambdaInstance.labelValues.function_name = undefined;
+        lambdaInstance.labelValues.version = undefined;
+        expect(lambdaInstance.isNameAndVersionSet()).toBe(false);
     });
 
     it("Tenant labels are initialised", () => {
@@ -97,21 +107,6 @@ describe("Metrics should have been initialized", () => {
         expect(lambdaInstance.latency).toBeInstanceOf(Histogram);
     });
 
-    it("Function context is not initialised yet", () => {
-        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
-        expect(lambdaInstance.isNameAndVersionSet()).toBe(false);
-    });
-
-    it("Function context is initialised and label values are updated", () => {
-        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
-        lambdaInstance.setFunctionName("OrderProcessor");
-        lambdaInstance.setFunctionVersion("1");
-        expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
-        expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor");
-        expect(lambdaInstance.labelValues.job).toBe("OrderProcessor");
-        expect(lambdaInstance.labelValues.version).toBe("1");
-    });
-
     const mockedCounter = mocked(Counter, true);
     const mockedHistogram = mocked(Histogram, true);
     it("Invocation is recorded", () => {
@@ -155,8 +150,6 @@ describe("Metrics should have been initialized", () => {
     it("Gets Metrics as text not null", async () => {
         const mockedRegistry = mocked(Registry, true);
         const metricInstance = new LambdaInstanceMetrics();
-        metricInstance.setFunctionName("mock-function");
-        metricInstance.setFunctionVersion("1");
         metricInstance.recordLatestMemoryLimit = jest.fn();
         mockedRegistry.prototype.metrics.mockImplementation(async () => {
             return "metrics-text";
@@ -167,8 +160,11 @@ describe("Metrics should have been initialized", () => {
     })
 
     it("Gets Metrics as text returns null", async () => {
-        const mockedRegistry = mocked(Registry, true);
         const metricInstance = new LambdaInstanceMetrics();
+        const mockIsSet: jest.Mock = jest.fn();
+        metricInstance.isNameAndVersionSet = mockIsSet;
+
+        mockIsSet.mockReturnValue(false);
         let result = await metricInstance.getAllMetricsAsText();
         expect(result).toBeNull();
     })

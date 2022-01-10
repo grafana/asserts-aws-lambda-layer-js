@@ -74,20 +74,13 @@ export class LambdaInstanceMetrics {
             asserts_source: 'prom-client',
             region: process.env['AWS_REGION']
         };
-
+        this.labelValues.function_name = process.env["AWS_LAMBDA_FUNCTION_NAME"];
+        this.labelValues.job = process.env["AWS_LAMBDA_FUNCTION_NAME"];
+        this.labelValues.version = process.env["AWS_LAMBDA_FUNCTION_VERSION"];
     }
 
     static getSingleton(): LambdaInstanceMetrics {
         return this.singleton;
-    }
-
-    setFunctionName(name: string): void {
-        this.labelValues.function_name = name;
-        this.labelValues.job = name;
-    }
-
-    setFunctionVersion(version: string): void {
-        this.labelValues.version = version;
     }
 
     setTenant(tenant: string): void {
