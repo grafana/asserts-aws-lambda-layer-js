@@ -8,5 +8,5 @@ package-lock.json
 **/*.d.ts
 **/*.map
 *.tgz
-src/lib/*.js
-tests/unit/*.js
+nodejs/src/lib/*.js
+nodejs/tests/unit/*.js
