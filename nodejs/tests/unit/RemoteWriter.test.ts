@@ -98,7 +98,7 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("Test writeMetrics", async () => {
-        process.env["ASSERTS_REMOTE_WRITE_URL"] = "url";
+        process.env["ASSERTS_REMOTE_WRITE_URL"] = "host";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
@@ -131,7 +131,7 @@ describe("Handler Wrapper works for async and sync", () => {
 
         const credentials = remoteWriter.remoteWriteConfig.tenantName + ':' + remoteWriter.remoteWriteConfig.password;
         expect(mockedRequest).toHaveBeenCalledWith({
-            hostname: remoteWriter.remoteWriteConfig.remoteWriteURL,
+            hostname: 'host',
             port: 443,
             path: '/api/v1/import/prometheus',
             method: 'POST',
@@ -143,7 +143,7 @@ describe("Handler Wrapper works for async and sync", () => {
         }, RemoteWriter.prototype.responseCallback);
 
         expect(mockedReq.on).toHaveBeenCalledWith('error', mockedResponseErrorHandler);
-        expect(mockedReq.write).toHaveBeenCalledWith(metricsText);
+        expect(mockedReq.write).toHaveBeenCalledWith(metricsText, expect.any(Function));
         expect(mockedReq.end).toHaveBeenCalled();
     });
 

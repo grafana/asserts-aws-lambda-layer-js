@@ -80,39 +80,45 @@ export class LambdaInstanceMetrics {
     }
 
     static getSingleton(): LambdaInstanceMetrics {
-        return this.singleton;
+        return LambdaInstanceMetrics.singleton;
     }
 
     setTenant(tenant: string): void {
-        this.labelValues.asserts_tenant = tenant;
-        this.labelValues.tenant = tenant;
+        const _this = LambdaInstanceMetrics.getSingleton();
+        _this.labelValues.asserts_tenant = tenant;
+        _this.labelValues.tenant = tenant;
     }
 
     recordLatency(latency: number): void {
-        this.latency.observe(latency);
+        const _this = LambdaInstanceMetrics.getSingleton();
+        _this.latency.observe(latency);
     }
 
     recordError(): void {
-        this.errors.inc(1);
+        const _this = LambdaInstanceMetrics.getSingleton();
+        _this.errors.inc(1);
     }
 
     recordInvocation(): void {
-        this.invocations.inc(1);
+        const _this = LambdaInstanceMetrics.getSingleton();
+        _this.invocations.inc(1);
     }
 
     recordLatestMemoryLimit(): void {
+        const _this = LambdaInstanceMetrics.getSingleton();
         if (process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"]) {
             const memoryLimit = Number(process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"]);
             if (!isNaN(memoryLimit)) {
-                this.memoryLimitMb.set(memoryLimit);
+                _this.memoryLimitMb.set(memoryLimit);
             }
         }
     }
 
     async getAllMetricsAsText() {
-        this.recordLatestMemoryLimit();
-        if (this.isNameAndVersionSet()) {
-            globalRegister.setDefaultLabels(this.labelValues);
+        const _this = LambdaInstanceMetrics.getSingleton();
+        _this.recordLatestMemoryLimit();
+        if (_this.isNameAndVersionSet()) {
+            globalRegister.setDefaultLabels(_this.labelValues);
             return await globalRegister.metrics();
         } else {
             return Promise.resolve(null);
@@ -120,6 +126,7 @@ export class LambdaInstanceMetrics {
     }
 
     isNameAndVersionSet(): boolean {
-        return !!(this.labelValues.job && this.labelValues.function_name && this.labelValues.version);
+        const _this = LambdaInstanceMetrics.getSingleton();
+        return !!(_this.labelValues.job && _this.labelValues.function_name && _this.labelValues.version);
     }
 }
