@@ -4,7 +4,7 @@ import {TaskTimer} from "tasktimer";
 
 export class RemoteWriter {
     remoteWriteConfig: {
-        remoteWriteURL?: string | undefined;
+        hostName?: string | undefined;
         tenantName?: string | undefined;
         password?: string | undefined;
         isComplete: boolean;
@@ -12,16 +12,17 @@ export class RemoteWriter {
     lambdaInstance: LambdaInstanceMetrics;
     taskTimer?: TaskTimer;
     cancelled: boolean = false;
+    static singleton: RemoteWriter;
 
     constructor() {
         this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
         this.remoteWriteConfig = {
-            remoteWriteURL: process.env["ASSERTS_REMOTE_WRITE_URL"],
+            hostName: process.env["ASSERTS_REMOTE_WRITE_URL"],
             tenantName: process.env["ASSERTS_TENANT_NAME"],
             password: process.env["ASSERTS_PASSWORD"],
             isComplete: false
         };
-        if (this.remoteWriteConfig.remoteWriteURL !== 'undefined' &&
+        if (this.remoteWriteConfig.hostName !== 'undefined' &&
             this.remoteWriteConfig.tenantName !== 'undefined' && this.remoteWriteConfig.password !== 'undefined') {
             this.remoteWriteConfig.isComplete = true;
             this.lambdaInstance.setTenant((this.remoteWriteConfig.tenantName as (string)));
@@ -33,49 +34,57 @@ export class RemoteWriter {
 
             // 'tick' will happen every 15 seconds
             this.taskTimer.on('tick', this.flushMetrics);
+            this.taskTimer.start();
         }
+        RemoteWriter.singleton = this;
     }
 
     isRemoteWritingOn(): boolean {
-        return this.remoteWriteConfig.isComplete && !this.cancelled;
+        const _this = RemoteWriter.singleton;
+        return _this.remoteWriteConfig.isComplete && !_this.cancelled;
     }
 
     async flushMetrics() {
-        if (!this.cancelled) {
-            await this.writeMetrics();
+        const _this = RemoteWriter.singleton;
+        if (!_this.cancelled) {
+            await _this.writeMetrics();
         }
     }
 
     cancel(): void {
-        this.cancelled = true;
-        this.taskTimer?.removeListener('tick', this.flushMetrics);
+        const _this = RemoteWriter.singleton;
+        _this.cancelled = true;
+        _this.taskTimer?.removeListener('tick', _this.flushMetrics);
     }
 
     // This will have to be invoked once every 15 seconds. We should probably use the NodeJS Timer for this
-    async writeMetrics() {
-        if (this.isRemoteWritingOn()) {
-            let text = await this.lambdaInstance.getAllMetricsAsText();
+    async writeMetrics(): Promise<void> {
+        const _this = RemoteWriter.singleton;
+        if (_this.isRemoteWritingOn()) {
+            let text = await _this.lambdaInstance.getAllMetricsAsText();
             if (text != null) {
                 const options = {
-                    hostname: this.remoteWriteConfig.remoteWriteURL,
+                    hostname: _this.remoteWriteConfig.hostName,
                     port: 443,
                     path: '/api/v1/import/prometheus',
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Basic ' + Buffer.from(this.remoteWriteConfig.tenantName + ':' + this.remoteWriteConfig.password).toString('base64'),
+                        'Authorization': 'Basic ' + Buffer.from(_this.remoteWriteConfig.tenantName + ':' + _this.remoteWriteConfig.password).toString('base64'),
                         'Content-Type': 'text/plain',
                         'Content-Length': text.length
                     }
                 };
-                const req = request(options, this.responseCallback)
-                req.on('error', this.requestErrorHandler);
-                req.write(text);
+                const req = request(options, _this.responseCallback)
+                req.on('error', _this.requestErrorHandler);
+                req.write(text, () => {
+                    console.log("Flushed metrics to remote");
+                });
                 req.end();
             } else {
                 console.log("Function name and version not known yet. Probably no invocations yet");
             }
         } else {
-            console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(this.remoteWriteConfig));
+            console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(_this.remoteWriteConfig));
         }
     }
 
@@ -84,7 +93,8 @@ export class RemoteWriter {
         if (res.statusCode!.toString() === "400") {
             console.log("Response: " + JSON.stringify(res));
         }
-        res.on('data', this.responseDataHandler);
+        const _this = RemoteWriter.singleton;
+        res.on('data', _this.responseDataHandler);
     }
 
     responseDataHandler(data: any) {
