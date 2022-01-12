@@ -6,7 +6,6 @@
   "files": [
     "src/*.js",
     "src/lib/*.js",
-    "awslambda-auto.js",
     "*.json",
     "src/*.d.ts",
     "src/lib/*.d.ts"

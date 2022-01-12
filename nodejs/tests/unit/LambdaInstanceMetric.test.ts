@@ -5,8 +5,6 @@ import {mocked} from "jest-mock";
 jest.mock('prom-client');
 
 describe("Metrics should have been initialized", () => {
-
-
     beforeEach(() => {
         process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"] = "128";
         process.env["AWS_LAMBDA_FUNCTION_NAME"] = "OrderProcessor";
@@ -149,13 +147,11 @@ describe("Metrics should have been initialized", () => {
 
     it("Gets Metrics as text not null", async () => {
         const mockedRegistry = mocked(Registry, true);
-        const metricInstance = new LambdaInstanceMetrics();
-        metricInstance.recordLatestMemoryLimit = jest.fn();
+        const metricInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         mockedRegistry.prototype.metrics.mockImplementation(async () => {
             return "metrics-text";
         });
         let result = await metricInstance.getAllMetricsAsText();
-        expect(metricInstance.recordLatestMemoryLimit).toHaveBeenCalled();
         expect(result).toBe("metrics-text");
     })
 
