@@ -8,7 +8,7 @@ collectDefaultMetrics({
 
 export class LambdaInstanceMetrics {
     labelNames: string[] = [
-        'asserts_source', 'asserts_tenant', 'function_name', 'instance', 'job', 'namespace', 'region', 'tenant', 'version'];
+        'asserts_source', 'asserts_tenant', 'function_name', 'instance', 'job', 'namespace', 'asserts_site', 'tenant', 'version'];
     invocations: Counter<string>;
     errors: Counter<string>;
     up: Gauge<string>;
