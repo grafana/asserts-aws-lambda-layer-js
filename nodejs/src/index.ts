@@ -1,7 +1,5 @@
 'use strict';
-import {wrapHandler} from "./lib/HandlerWrapper";
-import {RemoteWriter} from "./lib/RemoteWriter";
+import { wrapHandler } from './lib/HandlerWrapper';
+import './lib/RemoteWriter';
 
-// Trigger initialisation of the remote writer
-const remoteWriter: RemoteWriter = RemoteWriter.getSingleton();
-export {wrapHandler};
+export { wrapHandler };
