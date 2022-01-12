@@ -48,11 +48,9 @@ describe("Handler Wrapper works for async and sync", () => {
             return expectedResult;
         }
 
-        // @ts-ignore
-        const wrapHandler: Promise<any> = AssertsSDK.wrapHandler(asyncHandler);
+        const wrapHandler = AssertsSDK.wrapHandler(asyncHandler);
 
-        // @ts-ignore
-        const actualResult = await wrapHandler(sqsEvent, context);
+        const actualResult = await wrapHandler(sqsEvent, context, () => {});
         expect(actualResult).toStrictEqual(expectedResult);
 
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
@@ -67,13 +65,11 @@ describe("Handler Wrapper works for async and sync", () => {
             throw new Error();
         }
 
-        // @ts-ignore
-        const wrapHandler: Promise<any> = AssertsSDK.wrapHandler(asyncHandlerThrowingError, {
+        const wrapHandler = AssertsSDK.wrapHandler(asyncHandlerThrowingError, {
             rethrowAfterCapture: false
         });
 
-        // @ts-ignore
-        await wrapHandler(sqsEvent, context);
+        await wrapHandler(sqsEvent, context, () => {});
 
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).toHaveBeenCalledTimes(1);
@@ -87,13 +83,12 @@ describe("Handler Wrapper works for async and sync", () => {
             throw new Error();
         }
 
-        // @ts-ignore
-        const wrapHandler: Promise<any> = AssertsSDK.wrapHandler(asyncHandlerThrowingError, {
+        const wrapHandler = AssertsSDK.wrapHandler(asyncHandlerThrowingError, {
             rethrowAfterCapture: true
         });
 
-        try { // @ts-ignore
-            await wrapHandler(sqsEvent, context);
+        try {
+            await wrapHandler(sqsEvent, context, () => {});
         } catch (e) {
         }
 
@@ -109,11 +104,9 @@ describe("Handler Wrapper works for async and sync", () => {
             return Promise.resolve(expectedResult);
         }
 
-        // @ts-ignore
-        let wrapHandler: Promise<any> = AssertsSDK.wrapHandler(handlerReturningPromise);
+        let wrapHandler = AssertsSDK.wrapHandler(handlerReturningPromise);
 
-        // @ts-ignore
-        const actualResult = await wrapHandler(sqsEvent, context);
+        const actualResult = await wrapHandler(sqsEvent, context, () => {});
         expect(actualResult).toStrictEqual(expectedResult);
 
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
@@ -128,13 +121,11 @@ describe("Handler Wrapper works for async and sync", () => {
             throw new Error();
         }
 
-        // @ts-ignore
-        let wrapHandler: Promise<any> = AssertsSDK.wrapHandler(handlerReturningPromiseAndRejection, {
+        let wrapHandler = AssertsSDK.wrapHandler(handlerReturningPromiseAndRejection, {
             rethrowAfterCapture: false
         });
 
-        // @ts-ignore
-        await wrapHandler(sqsEvent, context);
+        await wrapHandler(sqsEvent, context, () => {});
 
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
         expect(mockRecordError).toHaveBeenCalledTimes(1);
@@ -156,10 +147,8 @@ describe("Handler Wrapper works for async and sync", () => {
             givenCallback(null, expectedResult);
         }
 
-        // @ts-ignore
-        let wrapHandler: void = AssertsSDK.wrapHandler(handlerWithResolution);
+        let wrapHandler = AssertsSDK.wrapHandler(handlerWithResolution);
 
-        // @ts-ignore
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
@@ -184,12 +173,10 @@ describe("Handler Wrapper works for async and sync", () => {
             givenCallback("error", null);
         }
 
-        // @ts-ignore
-        let wrapHandler: void = AssertsSDK.wrapHandler(handlerWithRejection, {
+        let wrapHandler = AssertsSDK.wrapHandler(handlerWithRejection, {
             rethrowAfterCapture: false
         });
 
-        // @ts-ignore
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
@@ -214,12 +201,10 @@ describe("Handler Wrapper works for async and sync", () => {
             throw new Error();
         }
 
-        // @ts-ignore
-        let wrapHandler: void = AssertsSDK.wrapHandler(actualHandler, {
+        let wrapHandler = AssertsSDK.wrapHandler(actualHandler, {
             rethrowAfterCapture: false
         });
 
-        // @ts-ignore
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
@@ -244,12 +229,10 @@ describe("Handler Wrapper works for async and sync", () => {
             givenCallback(null, expectedResult);
         }
 
-        // @ts-ignore
-        let wrapHandler: void = AssertsSDK.wrapHandler(asyncHandlerReturningPromise, {
+        let wrapHandler = AssertsSDK.wrapHandler(asyncHandlerReturningPromise, {
             rethrowAfterCapture: false
         });
 
-        // @ts-ignore
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
         expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
