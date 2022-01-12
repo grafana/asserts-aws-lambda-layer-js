@@ -115,15 +115,7 @@ export class LambdaInstanceMetrics {
         if (this.isNameAndVersionSet()) {
             // Touch 'up' metric
             this.up.set(1.0);
-
-            console.log("Setting default labels to : " + JSON.stringify(this.labelValues));
             globalRegister.setDefaultLabels(this.labelValues);
-
-            const allMetrics = await globalRegister.getMetricsAsArray();
-            allMetrics.forEach((_metric) => {
-                console.log(_metric.name + " should show up in text format");
-            });
-
             const metrics = await globalRegister.metrics();
             console.log("Gathered metrics:\n" + metrics);
             return metrics;
