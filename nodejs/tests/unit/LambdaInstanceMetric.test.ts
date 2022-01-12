@@ -27,7 +27,7 @@ describe("Metrics should have been initialized", () => {
         expect(lambdaInstance.labelValues).toBeTruthy();
         expect(lambdaInstance.labelValues.instance).toBeTruthy();
         expect(lambdaInstance.labelValues.namespace).toBe("AWS/Lambda");
-        expect(lambdaInstance.labelValues.region).toBe("us-west-2");
+        expect(lambdaInstance.labelValues.asserts_site).toBe("us-west-2");
         expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
