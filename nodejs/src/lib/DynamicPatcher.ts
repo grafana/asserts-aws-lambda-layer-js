@@ -5,12 +5,6 @@ import {existsSync} from "fs";
 import {wrapHandler} from "./HandlerWrapper";
 
 export class DynamicPatcher {
-    patchDynamicallyIfEnabled() {
-        if (process.env.ASSERTS_DYNAMIC_PATCHING && process.env.ASSERTS_DYNAMIC_PATCHING === "true") {
-            this.patchHandler();
-        }
-    }
-
     patchHandler() {
         console.log("Asserts Dynamic Handler Patching is enabled. Will try to patch handler dynamically");
         if (process.env.LAMBDA_TASK_ROOT && process.env.LAMBDA_TASK_ROOT !== "undefined") {

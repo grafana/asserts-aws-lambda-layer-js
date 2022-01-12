@@ -4,6 +4,8 @@
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
   "main": "src/index.js",
   "files": [
+    "awslambda-auto.ts",
+    "awslambda-auto.js",
     "src/*.js",
     "src/lib/*.js",
     "*.json",

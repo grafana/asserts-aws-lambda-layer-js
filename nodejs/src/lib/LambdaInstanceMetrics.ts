@@ -113,8 +113,12 @@ export class LambdaInstanceMetrics {
     async getAllMetricsAsText() {
         this.recordLatestMemoryLimit();
         if (this.isNameAndVersionSet()) {
+            // Touch 'up' metric
+            this.up.set(1.0);
             globalRegister.setDefaultLabels(this.labelValues);
-            return await globalRegister.metrics();
+            const metrics = await globalRegister.metrics();
+            console.log("Gathered metrics:\n" + metrics);
+            return metrics;
         } else {
             return Promise.resolve(null);
         }

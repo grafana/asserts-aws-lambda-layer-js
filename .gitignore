@@ -8,6 +8,7 @@ package-lock.json
 **/*.d.ts
 **/*.map
 *.tgz
+nodejs/awslambda-auto.js
 nodejs/src/*.js
 nodejs/src/lib/*.js
 nodejs/tests/unit/*.js

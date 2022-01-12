@@ -1,3 +1,4 @@
+'use strict';
 import {LambdaInstanceMetrics} from './LambdaInstanceMetrics';
 import {request} from 'https';
 import {TaskTimer} from "tasktimer";
@@ -39,6 +40,7 @@ export class RemoteWriter {
             // 'tick' will happen every 15 seconds
             this.taskTimer.on('tick', this.flushMetrics);
             this.taskTimer.start();
+            console.log("Registered metric flush task with timer at 15 seconds interval");
         }
         RemoteWriter.singleton = this;
     }
@@ -49,6 +51,7 @@ export class RemoteWriter {
     }
 
     async flushMetrics() {
+        console.log("Timer task flushing metrics...");
         const _this = RemoteWriter.singleton;
         if (!_this.cancelled) {
             await _this.writeMetrics();
@@ -64,6 +67,7 @@ export class RemoteWriter {
     // This will have to be invoked once every 15 seconds. We should probably use the NodeJS Timer for this
     async writeMetrics(): Promise<void> {
         if (this.isRemoteWritingOn()) {
+            console.log("Timer task flushing metrics...");
             let text = await this.lambdaInstance.getAllMetricsAsText();
             if (text != null) {
                 const options = {
