@@ -18,7 +18,7 @@ describe("Metrics should have been initialized", () => {
         expect(lambdaInstance.labelNames)
             .toStrictEqual([
                 'asserts_source', 'asserts_tenant',
-                'function_name', 'instance', 'job', 'namespace', 'region',
+                'function_name', 'instance', 'job', 'namespace', 'asserts_site',
                 'tenant', 'version']);
     });
 
