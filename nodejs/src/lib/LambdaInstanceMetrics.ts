@@ -1,3 +1,4 @@
+'use strict';
 import {collectDefaultMetrics, Counter, Gauge, Histogram, register as globalRegister} from 'prom-client';
 import {hostname} from 'os';
 
@@ -70,7 +71,7 @@ export class LambdaInstanceMetrics {
 
         this.labelValues = {
             namespace: "AWS/Lambda",
-            instance: hostname(),
+            instance: hostname() + ":" + process.pid,
             asserts_source: 'prom-client',
             region: process.env['AWS_REGION']
         };
@@ -84,41 +85,35 @@ export class LambdaInstanceMetrics {
     }
 
     setTenant(tenant: string): void {
-        const _this = LambdaInstanceMetrics.getSingleton();
-        _this.labelValues.asserts_tenant = tenant;
-        _this.labelValues.tenant = tenant;
+        this.labelValues.asserts_tenant = tenant;
+        this.labelValues.tenant = tenant;
     }
 
     recordLatency(latency: number): void {
-        const _this = LambdaInstanceMetrics.getSingleton();
-        _this.latency.observe(latency);
+        this.latency.observe(latency);
     }
 
     recordError(): void {
-        const _this = LambdaInstanceMetrics.getSingleton();
-        _this.errors.inc(1);
+        this.errors.inc(1);
     }
 
     recordInvocation(): void {
-        const _this = LambdaInstanceMetrics.getSingleton();
-        _this.invocations.inc(1);
+        this.invocations.inc(1);
     }
 
     recordLatestMemoryLimit(): void {
-        const _this = LambdaInstanceMetrics.getSingleton();
         if (process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"]) {
             const memoryLimit = Number(process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"]);
             if (!isNaN(memoryLimit)) {
-                _this.memoryLimitMb.set(memoryLimit);
+                this.memoryLimitMb.set(memoryLimit);
             }
         }
     }
 
     async getAllMetricsAsText() {
-        const _this = LambdaInstanceMetrics.getSingleton();
-        _this.recordLatestMemoryLimit();
-        if (_this.isNameAndVersionSet()) {
-            globalRegister.setDefaultLabels(_this.labelValues);
+        this.recordLatestMemoryLimit();
+        if (this.isNameAndVersionSet()) {
+            globalRegister.setDefaultLabels(this.labelValues);
             return await globalRegister.metrics();
         } else {
             return Promise.resolve(null);
@@ -126,7 +121,6 @@ export class LambdaInstanceMetrics {
     }
 
     isNameAndVersionSet(): boolean {
-        const _this = LambdaInstanceMetrics.getSingleton();
-        return !!(_this.labelValues.job && _this.labelValues.function_name && _this.labelValues.version);
+        return !!(this.labelValues.job && this.labelValues.function_name && this.labelValues.version);
     }
 }

@@ -12,12 +12,16 @@ export class RemoteWriter {
     lambdaInstance: LambdaInstanceMetrics;
     taskTimer?: TaskTimer;
     cancelled: boolean = false;
-    static singleton: RemoteWriter;
+    private static singleton: RemoteWriter = new RemoteWriter();
+
+    static getSingleton() {
+        return this.singleton;
+    }
 
     constructor() {
         this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
         this.remoteWriteConfig = {
-            hostName: process.env["ASSERTS_REMOTE_WRITE_URL"],
+            hostName: process.env["ASSERTS_CLOUD_HOST"],
             tenantName: process.env["ASSERTS_TENANT_NAME"],
             password: process.env["ASSERTS_PASSWORD"],
             isComplete: false
@@ -59,23 +63,22 @@ export class RemoteWriter {
 
     // This will have to be invoked once every 15 seconds. We should probably use the NodeJS Timer for this
     async writeMetrics(): Promise<void> {
-        const _this = RemoteWriter.singleton;
-        if (_this.isRemoteWritingOn()) {
-            let text = await _this.lambdaInstance.getAllMetricsAsText();
+        if (this.isRemoteWritingOn()) {
+            let text = await this.lambdaInstance.getAllMetricsAsText();
             if (text != null) {
                 const options = {
-                    hostname: _this.remoteWriteConfig.hostName,
+                    hostname: this.remoteWriteConfig.hostName,
                     port: 443,
                     path: '/api/v1/import/prometheus',
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Basic ' + Buffer.from(_this.remoteWriteConfig.tenantName + ':' + _this.remoteWriteConfig.password).toString('base64'),
+                        'Authorization': 'Basic ' + Buffer.from(this.remoteWriteConfig.tenantName + ':' + this.remoteWriteConfig.password).toString('base64'),
                         'Content-Type': 'text/plain',
                         'Content-Length': text.length
                     }
                 };
-                const req = request(options, _this.responseCallback)
-                req.on('error', _this.requestErrorHandler);
+                const req = request(options, this.responseCallback)
+                req.on('error', this.requestErrorHandler);
                 req.write(text, () => {
                     console.log("Flushed metrics to remote");
                 });
@@ -84,7 +87,7 @@ export class RemoteWriter {
                 console.log("Function name and version not known yet. Probably no invocations yet");
             }
         } else {
-            console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(_this.remoteWriteConfig));
+            console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(this.remoteWriteConfig));
         }
     }
 
