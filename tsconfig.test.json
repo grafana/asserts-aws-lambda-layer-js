@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig.json",
 
-  "include": ["tests/**/*"],
+  "include": [
+    "tests/**/*"
+  ],
 
   "compilerOptions": {
     // should include all types from `./tsconfig.json` plus types for all test frameworks used
