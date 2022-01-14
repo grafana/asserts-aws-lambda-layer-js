@@ -15,6 +15,18 @@ describe("Handler Wrapper works for async and sync", () => {
     const realErrorHandler = RemoteWriter.prototype.requestErrorHandler;
     const realOn = TaskTimer.prototype.on;
 
+    // Mock flushMetrics to avoid real call;
+    const mockedOn = jest.fn();
+    const mockedFlushMetrics = jest.fn();
+    const mockedGetAllMetrics = jest.fn();
+    const mockedRequest: jest.Mock = (https.request as jest.Mock);
+
+    const mockedReq = {
+        on: jest.fn(), write: jest.fn(), end: jest.fn()
+    };
+
+    const mockedResponseErrorHandler = jest.fn();
+
     LambdaInstanceMetrics.prototype.isNameAndVersionSet = mockIsSet;
     LambdaInstanceMetrics.prototype.getAllMetricsAsText = mockGetMetrics;
     LambdaInstanceMetrics.prototype.setTenant = mockSetTenant;
@@ -33,12 +45,17 @@ describe("Handler Wrapper works for async and sync", () => {
         RemoteWriter.prototype.requestErrorHandler = realErrorHandler;
     })
 
-    it("All Remote Write Configs Missing", async () => {
+    it("All Required Remote Write Configs Missing", async () => {
         const remoteWriter: RemoteWriter = new RemoteWriter();
         expect(remoteWriter.isRemoteWritingOn()).toBe(false);
     });
 
-    it("Remote Write URL Missing", async () => {
+    it("Test singleton", async () => {
+        const remoteWriter: RemoteWriter = new RemoteWriter();
+        expect(RemoteWriter.getSingleton()).toBe(remoteWriter);
+    });
+
+    it("Remote Write Host Missing", async () => {
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
@@ -54,12 +71,12 @@ describe("Handler Wrapper works for async and sync", () => {
         expect(remoteWriter.isRemoteWritingOn()).toBe(false);
     });
 
-    it("Password Missing", async () => {
+    it("Password is treated as optional", async () => {
         process.env["ASSERTS_CLOUD_HOST"] = "url";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
 
         const remoteWriter: RemoteWriter = new RemoteWriter();
-        expect(remoteWriter.isRemoteWritingOn()).toBe(false);
+        expect(remoteWriter.isRemoteWritingOn()).toBe(true);
     });
 
     it("All Config Present", async () => {
@@ -97,22 +114,47 @@ describe("Handler Wrapper works for async and sync", () => {
         expect(mockedWriteMetrics).toHaveBeenCalled();
     });
 
-    it("Test writeMetrics", async () => {
+    it("Test writeMetrics without password", async () => {
+        process.env["ASSERTS_CLOUD_HOST"] = "host";
+        process.env["ASSERTS_TENANT_NAME"] = "tenantName";
+
+        RemoteWriter.prototype.requestErrorHandler = mockedResponseErrorHandler;
+
+        RemoteWriter.prototype.flushMetrics = mockedFlushMetrics;
+        TaskTimer.prototype.on = mockedOn;
+        LambdaInstanceMetrics.prototype.getAllMetricsAsText = mockedGetAllMetrics;
+
+        const metricsText = "metrics";
+        mockedGetAllMetrics.mockReturnValue(metricsText);
+
+        const remoteWriter: RemoteWriter = new RemoteWriter();
+        expect(mockedOn).toHaveBeenCalledWith('tick', mockedFlushMetrics);
+
+        mockedRequest.mockReturnValue(mockedReq);
+
+        await remoteWriter.writeMetrics();
+
+        expect(mockedRequest).toHaveBeenCalledWith({
+            hostname: 'host',
+            port: 443,
+            path: '/api/v1/import/prometheus',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+                'Content-Length': metricsText.length
+            }
+        }, RemoteWriter.prototype.responseCallback);
+
+        expect(mockedReq.on).toHaveBeenCalledWith('error', mockedResponseErrorHandler);
+        expect(mockedReq.write).toHaveBeenCalledWith(metricsText, expect.any(Function));
+        expect(mockedReq.end).toHaveBeenCalled();
+    });
+
+    it("Test writeMetrics with password", async () => {
         process.env["ASSERTS_CLOUD_HOST"] = "host";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
-        // Mock flushMetrics to avoid real call;
-        const mockedOn = jest.fn();
-        const mockedFlushMetrics = jest.fn();
-        const mockedGetAllMetrics = jest.fn();
-        const mockedRequest: jest.Mock = (https.request as jest.Mock);
-
-        const mockedReq = {
-            on: jest.fn(), write: jest.fn(), end: jest.fn()
-        };
-
-        const mockedResponseErrorHandler = jest.fn();
         RemoteWriter.prototype.requestErrorHandler = mockedResponseErrorHandler;
 
         RemoteWriter.prototype.flushMetrics = mockedFlushMetrics;

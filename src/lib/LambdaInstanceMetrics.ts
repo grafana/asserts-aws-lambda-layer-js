@@ -1,5 +1,5 @@
 'use strict';
-import {collectDefaultMetrics, Counter, Gauge, Histogram, register as globalRegister} from 'prom-client';
+import {collectDefaultMetrics, Counter, Histogram, register as globalRegister} from 'prom-client';
 import {hostname} from 'os';
 
 collectDefaultMetrics({
@@ -7,13 +7,14 @@ collectDefaultMetrics({
 });
 
 export class LambdaInstanceMetrics {
+    // asserts_env will be optionally sent if configured so in the environment variable
     labelNames: string[] = [
-        'asserts_source', 'asserts_tenant', 'function_name', 'instance', 'job', 'namespace', 'asserts_site', 'tenant', 'version'];
+        'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
+        'function_name', 'instance', 'job', 'namespace',
+        'tenant', 'version'];
     invocations: Counter<string>;
     errors: Counter<string>;
-    up: Gauge<string>;
     latency: Histogram<string>;
-    memoryLimitMb: Gauge<string>;
     labelValues: {
         job?: string;
         function_name?: string;
@@ -24,19 +25,12 @@ export class LambdaInstanceMetrics {
         asserts_tenant?: string;
         tenant?: string;
         asserts_site: string | undefined;
+        asserts_env?: string | undefined;
     };
 
     private static singleton: LambdaInstanceMetrics = new LambdaInstanceMetrics();
 
     constructor() {
-        this.up = new Gauge({
-            name: 'up',
-            help: `Heartbeat metric`,
-            registers: [globalRegister],
-            labelNames: this.labelNames
-        });
-        globalRegister.registerMetric(this.up);
-
         this.invocations = new Counter({
             name: 'aws_lambda_invocations_total',
             help: `AWS Lambda Invocations Count`,
@@ -61,14 +55,6 @@ export class LambdaInstanceMetrics {
         });
         globalRegister.registerMetric(this.latency);
 
-        this.memoryLimitMb = new Gauge({
-            name: 'aws_lambda_memory_limit_mb',
-            help: `AWS Lambda Memory Limit in MB`,
-            registers: [globalRegister],
-            labelNames: this.labelNames
-        });
-        globalRegister.registerMetric(this.memoryLimitMb);
-
         this.labelValues = {
             namespace: "AWS/Lambda",
             instance: hostname() + ":" + process.pid,
@@ -78,6 +64,9 @@ export class LambdaInstanceMetrics {
         this.labelValues.function_name = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.job = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.version = process.env["AWS_LAMBDA_FUNCTION_VERSION"];
+        if(process.env["ASSERTS_ENVIRONMENT"]) {
+            this.labelValues.asserts_env = process.env["ASSERTS_ENVIRONMENT"];
+        }
     }
 
     static getSingleton(): LambdaInstanceMetrics {
@@ -101,20 +90,8 @@ export class LambdaInstanceMetrics {
         this.invocations.inc(1);
     }
 
-    recordLatestMemoryLimit(): void {
-        if (process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"]) {
-            const memoryLimit = Number(process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"]);
-            if (!isNaN(memoryLimit)) {
-                this.memoryLimitMb.set(memoryLimit);
-            }
-        }
-    }
-
     async getAllMetricsAsText() {
-        this.recordLatestMemoryLimit();
         if (this.isNameAndVersionSet()) {
-            // Touch 'up' metric
-            this.up.set(1.0);
             globalRegister.setDefaultLabels(this.labelValues);
             const metrics = await globalRegister.metrics();
             console.log("Gathered metrics:\n" + metrics);
@@ -129,7 +106,7 @@ export class LambdaInstanceMetrics {
     }
 
     mapRegionCode(region: string | undefined) {
-        switch(region) {
+        switch (region) {
             case 'uswest1':
                 return 'us-west-1';
             case 'uswest2':
