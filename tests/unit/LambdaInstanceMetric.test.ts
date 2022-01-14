@@ -1,5 +1,5 @@
 import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
-import {Gauge, Counter, Histogram, register as globalRegister, Registry} from "prom-client";
+import {Counter, Histogram, register as globalRegister, Registry} from "prom-client";
 import {mocked} from "jest-mock";
 
 jest.mock('prom-client');
@@ -17,8 +17,8 @@ describe("Metrics should have been initialized", () => {
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelNames)
             .toStrictEqual([
-                'asserts_source', 'asserts_tenant',
-                'function_name', 'instance', 'job', 'namespace', 'asserts_site',
+                'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
+                'function_name', 'instance', 'job', 'namespace',
                 'tenant', 'version']);
     });
 
@@ -32,6 +32,21 @@ describe("Metrics should have been initialized", () => {
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
+        expect(lambdaInstance.labelValues.asserts_env).toBeFalsy();
+    });
+
+    it("Label values are initialised with environment", () => {
+        process.env["ASSERTS_ENVIRONMENT"] = "dev";
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
+        expect(lambdaInstance.labelValues).toBeTruthy();
+        expect(lambdaInstance.labelValues.instance).toBeTruthy();
+        expect(lambdaInstance.labelValues.namespace).toBe("AWS/Lambda");
+        expect(lambdaInstance.labelValues.asserts_site).toBe("us-west-2");
+        expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")
+        expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
+        expect(lambdaInstance.labelValues.version).toBe("1");
+        expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
+        expect(lambdaInstance.labelValues.asserts_env).toBe("dev");
     });
 
     it("Function context is not initialised yet", () => {
@@ -47,19 +62,6 @@ describe("Metrics should have been initialized", () => {
         lambdaInstance.setTenant("tenant");
         expect(lambdaInstance.labelValues.tenant).toBe("tenant");
         expect(lambdaInstance.labelValues.asserts_tenant).toBe("tenant");
-    });
-
-    it("Gauge for up metric and Lambda Memory Limit is created", () => {
-        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
-        expect(Gauge).toHaveBeenCalledTimes(2);
-        expect(Gauge).toHaveBeenCalledWith({
-            name: 'up',
-            help: `Heartbeat metric`,
-            registers: [globalRegister],
-            labelNames: lambdaInstance.labelNames
-        });
-        expect(lambdaInstance.up).toBeInstanceOf(Gauge);
-        expect(lambdaInstance.memoryLimitMb).toBeInstanceOf(Gauge);
     });
 
     it("Counters for invocations and errors are created", () => {
@@ -132,19 +134,6 @@ describe("Metrics should have been initialized", () => {
         expect(mockedHistogram.prototype.observe).toHaveBeenCalledWith(10.0);
     });
 
-    it("Memory Limit Gauge metric is set", async () => {
-        const metricInstance = new LambdaInstanceMetrics();
-        metricInstance.recordLatestMemoryLimit();
-        expect(Gauge.prototype.set).toHaveBeenCalledWith(128);
-    });
-
-    it("Memory Limit Gauge metric is not set", async () => {
-        process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"] = "abc";
-        const metricInstance = new LambdaInstanceMetrics();
-        metricInstance.recordLatestMemoryLimit();
-        expect(Gauge.prototype.set).not.toHaveBeenCalled();
-    });
-
     it("Gets Metrics as text not null", async () => {
         const mockedRegistry = mocked(Registry, true);
         const metricInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
@@ -163,5 +152,13 @@ describe("Metrics should have been initialized", () => {
         mockIsSet.mockReturnValue(false);
         let result = await metricInstance.getAllMetricsAsText();
         expect(result).toBeNull();
+    })
+
+    it("Transform region code", async () => {
+        expect(LambdaInstanceMetrics.prototype.mapRegionCode('uswest1')).toBe('us-west-1');
+        expect(LambdaInstanceMetrics.prototype.mapRegionCode('uswest2')).toBe('us-west-2');
+        expect(LambdaInstanceMetrics.prototype.mapRegionCode('useast1')).toBe('us-east-1');
+        expect(LambdaInstanceMetrics.prototype.mapRegionCode('useast2')).toBe('us-east-2');
+        expect(LambdaInstanceMetrics.prototype.mapRegionCode('other')).toBe('other');
     })
 });

@@ -28,7 +28,7 @@ export class RemoteWriter {
             isComplete: false
         };
         if (this.remoteWriteConfig.hostName !== 'undefined' &&
-            this.remoteWriteConfig.tenantName !== 'undefined' && this.remoteWriteConfig.password !== 'undefined') {
+            this.remoteWriteConfig.tenantName !== 'undefined') {
             this.remoteWriteConfig.isComplete = true;
             this.lambdaInstance.setTenant((this.remoteWriteConfig.tenantName as (string)));
         } else {
@@ -75,11 +75,11 @@ export class RemoteWriter {
                     path: '/api/v1/import/prometheus',
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Basic ' + Buffer.from(this.remoteWriteConfig.tenantName + ':' + this.remoteWriteConfig.password).toString('base64'),
                         'Content-Type': 'text/plain',
                         'Content-Length': text.length
                     }
                 };
+                this.setAuthHeaders(options);
                 const req = request(options, this.responseCallback)
                 req.on('error', this.requestErrorHandler);
                 req.write(text, () => {
@@ -91,6 +91,14 @@ export class RemoteWriter {
             }
         } else {
             console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(this.remoteWriteConfig));
+        }
+    }
+
+    setAuthHeaders(options: any) {
+        if (this.remoteWriteConfig.password && this.remoteWriteConfig.password !== 'undefined') {
+            options.headers.Authorization = 'Basic ' + Buffer
+                .from(this.remoteWriteConfig.tenantName + ':' + this.remoteWriteConfig.password)
+                .toString('base64');
         }
     }
 
