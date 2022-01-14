@@ -3,7 +3,7 @@ import {RemoteWriter} from "../../src/lib/RemoteWriter";
 import {TaskTimer} from 'tasktimer';
 import * as https from "https";
 
-jest.mock('https', () => require('../../tests/__mocks__/https'));
+jest.mock('https', () => require('../__mocks__/https'));
 
 describe("Handler Wrapper works for async and sync", () => {
     const mockIsSet: jest.Mock = jest.fn();

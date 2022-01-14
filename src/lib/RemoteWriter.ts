@@ -67,7 +67,6 @@ export class RemoteWriter {
     // This will have to be invoked once every 15 seconds. We should probably use the NodeJS Timer for this
     async writeMetrics(): Promise<void> {
         if (this.isRemoteWritingOn()) {
-            console.log("Timer task flushing metrics...");
             let text = await this.lambdaInstance.getAllMetricsAsText();
             if (text != null) {
                 const options = {

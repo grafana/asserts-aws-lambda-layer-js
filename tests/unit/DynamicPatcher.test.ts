@@ -83,7 +83,7 @@ describe("Handler Wrapper works for async and sync", () => {
         process.env.AWS_LAMBDA_FUNCTION_VERSION = "1";
         const patcher: DynamicPatcher = new DynamicPatcher();
         patcher.patchHandler();
-        const mod = require('./../unit/lambda_task_root');
+        const mod = require('./lambda_task_root');
         mod.handler({}, {});
         expect(LambdaInstanceMetrics.prototype.recordInvocation).toHaveBeenCalled();
     });
