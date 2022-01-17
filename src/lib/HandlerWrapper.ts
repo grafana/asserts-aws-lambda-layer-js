@@ -94,9 +94,7 @@ export function wrapHandler<TEvent, TResult>(
             }
         } finally {
             const stop = process.hrtime(start);
-            lambdaMetrics.recordLatency(
-              Number(stop[0] * 1e9) + Number(stop[1] / 1e9),
-            );
+            lambdaMetrics.recordLatency(stop[0] + stop[1] / 1e9);
             if (error) {
                 lambdaMetrics.recordError();
             }
