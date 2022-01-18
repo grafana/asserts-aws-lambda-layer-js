@@ -54,8 +54,6 @@ In addition to the above metrics, the default metrics collected by [prom-client]
 To build the layer,
 
 ```
-git clone git@github.com:asserts/asserts-aws-lambda-layer-js.git
-cd asserts-aws-lambda-layer-js
 npm install tsc
 npm install ts-node
 npm install jest
@@ -68,6 +66,9 @@ npm pack
 ls -al asserts-sdk*
 -rw-r--r--  1 radhakrishnanj  staff  13736954 Jan 14 13:18 asserts-sdk-1.0.0.zip
 ```
+
+The tools provider under `deployment/cdk` can be used to apply the lambda layer in your functions along with the various environment variables.
+
 
 
 
