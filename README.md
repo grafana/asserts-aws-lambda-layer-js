@@ -55,11 +55,12 @@ To build the layer,
 
 ```
 git clone git@github.com:asserts/asserts-aws-lambda-layer-js.git
-cd asserts-aws-lambda-layer
+cd asserts-aws-lambda-layer-js
 npm install tsc
 npm install ts-node
 npm install jest
 npm install
+tsc
 rm tests/unit/*.js
 npm test
 npm pack
