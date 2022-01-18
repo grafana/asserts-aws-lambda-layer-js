@@ -54,11 +54,13 @@ In addition to the above metrics, the default metrics collected by [prom-client]
 To build the layer,
 
 ```
+git clone git@github.com:asserts/asserts-aws-lambda-layer-js.git
 cd asserts-aws-lambda-layer
 npm install tsc
 npm install ts-node
 npm install jest
 npm install
+rm tests/unit/*.js
 npm test
 npm pack
 ./build-layer.sh
