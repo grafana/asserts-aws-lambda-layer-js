@@ -1,8 +1,6 @@
 # asserts-aws-lambda-layer-js
 
-A AWS Lambda layer to capture NodeJS metrics from a NodeJS AWS Lambda function. The layer uses [prom-client](https://github.com/siimon/prom-client) to capture
-NodeJS metrics and forwards them to a configured end point through a `https` `POST` method on api `/api/v1/import/prometheus`. The metrics are sent in 
-prometheus text format
+AWS Lambda layer to capture NodeJS runtime metrics from a NodeJS AWS Lambda function. The layer uses [prom-client](https://github.com/siimon/prom-client) to capture the metrics and forwards them to a configured end point through a `https` `POST` method on api `/api/v1/import/prometheus`. The metrics are sent in prometheus text format
 
 # Programmatic instrumentation
 
@@ -41,7 +39,7 @@ The following environment variables will have to be defined regardless of whethe
 
 # Exported Metrics
 
-The following metrics are exported by this SDK
+The following metrics are exported by this layer
 
 |Metric Name|Metric Type|Description|
 |-----------|------|-----|
