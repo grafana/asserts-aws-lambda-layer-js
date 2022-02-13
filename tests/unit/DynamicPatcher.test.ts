@@ -14,8 +14,9 @@ describe("Handler Wrapper works for async and sync", () => {
         DynamicPatcher.prototype.tryPatchHandler = actualTryPatchHandler;
         process.env.LAMBDA_TASK_ROOT = undefined;
         process.env._HANDLER = undefined;
+        process.env.ASSERTS_LAYER_DISABLED = undefined;
     })
-    
+
 
     it("Patching aborts when Lambda Task Root is not defined", async () => {
         const mockTryPatchHandler = jest.fn();
@@ -31,6 +32,15 @@ describe("Handler Wrapper works for async and sync", () => {
         const patcher: DynamicPatcher = new DynamicPatcher();
         patcher.patchHandler();
         expect(DynamicPatcher.prototype.tryPatchHandler).not.toHaveBeenCalled();
+    });
+
+    it("Patching aborts when ASSERTS_LAYER_DISABLED env variable is set to 'true'", async () => {
+        const mockTryPatchHandler = jest.fn();
+        process.env.ASSERTS_LAYER_DISABLED = 'true';
+        DynamicPatcher.prototype.tryPatchHandler = mockTryPatchHandler;
+        const patcher: DynamicPatcher = new DynamicPatcher();
+        patcher.patchHandler();
+        expect(mockTryPatchHandler.mock.calls.length).toBe(0);
     });
 
     it("Patching is attempted when lambda task root and handler env variables are defined", async () => {
