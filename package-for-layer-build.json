@@ -1,9 +1,9 @@
 {
   "name": "build-AWS-layer",
-  "version": "1.0.0",
+  "version": "1",
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
   "main": "index.js",
   "dependencies": {
-    "asserts-aws-lambda-layer": "file:../../../asserts-aws-lambda-layer-1.0.0.tgz"
+    "asserts-aws-lambda-layer": "file:../../../asserts-aws-lambda-layer-1.tgz"
   }
 }
