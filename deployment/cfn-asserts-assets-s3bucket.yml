@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Creates a s3 bucket to keep all Asserts deployment assets
+Resources:
+  S3BucketForAsserts:
+    Type: AWS::S3::Bucket
+    Description: >-
+      A S3 bucket to host all Asserts assets
+    Properties:
+      BucketName: asserts-assets

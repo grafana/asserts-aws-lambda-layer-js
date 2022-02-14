@@ -33,7 +33,7 @@ describe("Handler Wrapper works for async and sync", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        process.env["ASSERTS_CLOUD_HOST"] = undefined;
+        process.env["ASSERTS_METRICSTORE_HOST"] = undefined;
         process.env["ASSERTS_TENANT_NAME"] = undefined;
         process.env["ASSERTS_PASSWORD"] = undefined;
     });
@@ -64,15 +64,15 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("Tenant name Missing", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "url";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "url";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
         const remoteWriter: RemoteWriter = new RemoteWriter();
-        expect(remoteWriter.isRemoteWritingOn()).toBe(false);
+        expect(remoteWriter.isRemoteWritingOn()).toBe(true);
     });
 
     it("Password is treated as optional", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "url";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "url";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
 
         const remoteWriter: RemoteWriter = new RemoteWriter();
@@ -80,7 +80,7 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("All Config Present", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "url";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "url";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
@@ -97,7 +97,7 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("Flush calls remote write", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "url";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "url";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
@@ -115,7 +115,7 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("Test writeMetrics without password", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "host";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "host";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
 
         RemoteWriter.prototype.requestErrorHandler = mockedResponseErrorHandler;
@@ -151,7 +151,7 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("Test writeMetrics with password", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "host";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "host";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
@@ -190,7 +190,7 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("Test writeMetrics no metrics", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "url";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "url";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
@@ -225,7 +225,7 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("Test writeMetrics when writing cancelled", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "url";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "url";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 
@@ -248,7 +248,7 @@ describe("Handler Wrapper works for async and sync", () => {
     });
 
     it("Test responseCallback", async () => {
-        process.env["ASSERTS_CLOUD_HOST"] = "url";
+        process.env["ASSERTS_METRICSTORE_HOST"] = "url";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
 

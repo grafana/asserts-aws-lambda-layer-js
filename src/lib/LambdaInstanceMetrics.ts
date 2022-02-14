@@ -3,7 +3,7 @@ import {collectDefaultMetrics, Counter, Histogram, register as globalRegister} f
 import {hostname} from 'os';
 
 collectDefaultMetrics({
-    gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5], // These are the default buckets.
+    gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5, 10], // These are the default buckets.
 });
 
 export class LambdaInstanceMetrics {
@@ -64,7 +64,7 @@ export class LambdaInstanceMetrics {
         this.labelValues.function_name = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.job = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.version = process.env["AWS_LAMBDA_FUNCTION_VERSION"];
-        if(process.env["ASSERTS_ENVIRONMENT"]) {
+        if (process.env["ASSERTS_ENVIRONMENT"]) {
             this.labelValues.asserts_env = process.env["ASSERTS_ENVIRONMENT"];
         }
     }

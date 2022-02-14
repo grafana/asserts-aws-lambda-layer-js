@@ -13,10 +13,14 @@ export class DynamicPatcher {
 
 
     patchHandler() {
-        console.log("Asserts Dynamic Handler Patching is enabled. Will try to patch handler dynamically");
         if (process.env.LAMBDA_TASK_ROOT && process.env.LAMBDA_TASK_ROOT !== "undefined") {
-            if (process.env._HANDLER && process.env._HANDLER !== "undefined" && !this.disabled) {
-                this.tryPatchHandler(process.env.LAMBDA_TASK_ROOT, process.env._HANDLER);
+            if (process.env._HANDLER && process.env._HANDLER !== "undefined") {
+                if (this.disabled) {
+                    console.log("Asserts Dynamic Handler Patching is disabled");
+                } else {
+                    console.log("Asserts Dynamic Handler Patching is enabled. Will try to patch handler dynamically");
+                    this.tryPatchHandler(process.env.LAMBDA_TASK_ROOT, process.env._HANDLER);
+                }
             } else {
                 console.log(`LAMBDA_TASK_ROOT is non-empty(${process.env.LAMBDA_TASK_ROOT}) but _HANDLER is not set`);
             }

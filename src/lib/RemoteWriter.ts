@@ -22,27 +22,32 @@ export class RemoteWriter {
     constructor() {
         this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
         this.remoteWriteConfig = {
-            hostName: process.env["ASSERTS_CLOUD_HOST"],
+            hostName: process.env["ASSERTS_METRICSTORE_HOST"],
             tenantName: process.env["ASSERTS_TENANT_NAME"],
             password: process.env["ASSERTS_PASSWORD"],
             isComplete: false
         };
-        if (this.remoteWriteConfig.hostName !== 'undefined' &&
-            this.remoteWriteConfig.tenantName !== 'undefined') {
-            this.remoteWriteConfig.isComplete = true;
-            this.lambdaInstance.setTenant((this.remoteWriteConfig.tenantName as (string)));
-        } else {
-            this.remoteWriteConfig.isComplete = false;
-        }
-        if (this.remoteWriteConfig.isComplete) {
-            this.taskTimer = new TaskTimer(15_000);
 
-            // 'tick' will happen every 15 seconds
-            this.taskTimer.on('tick', this.flushMetrics);
-            this.taskTimer.start();
-            console.log("Registered metric flush task with timer at 15 seconds interval");
+        if (this.remoteWriteConfig.tenantName && this.remoteWriteConfig.tenantName !== 'undefined') {
+            this.lambdaInstance.setTenant((this.remoteWriteConfig.tenantName as (string)));
+        }
+
+        this.remoteWriteConfig.isComplete = this.remoteWriteConfig.hostName !== 'undefined';
+        if (this.remoteWriteConfig.isComplete && !process.env.ASSERTS_LAYER_DISABLED &&
+            process.env.ASSERTS_LAYER_DISABLED !== 'undefined' &&
+            process.env.ASSERTS_LAYER_DISABLED !== 'true') {
+            this.startRemoteWriter();
         }
         RemoteWriter.singleton = this;
+    }
+
+    startRemoteWriter() {
+        this.taskTimer = new TaskTimer(15_000);
+
+        // 'tick' will happen every 15 seconds
+        this.taskTimer.on('tick', this.flushMetrics);
+        this.taskTimer.start();
+        console.log("Registered metric flush task with timer at 15 seconds interval");
     }
 
     isRemoteWritingOn(): boolean {
@@ -87,7 +92,7 @@ export class RemoteWriter {
                 });
                 req.end();
             } else {
-                console.log("Function name and version not known yet. Probably no invocations yet");
+                console.log("Function name and version not known yet");
             }
         } else {
             console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(this.remoteWriteConfig));
