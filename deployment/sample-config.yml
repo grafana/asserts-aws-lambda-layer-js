@@ -4,9 +4,10 @@ operation: add-layer
 # Layer arn needs to be specified for 'add' or 'update-version' operations
 layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-js:2
 
-# ASSERTS_METRICSTORE_HOST and ASSERTS_TENANT_NAME are required for 'add' operation
-# ASSERTS_PASSWORD is optional
+# ASSERTS_METRICSTORE_HOST is required for 'add' operation
 ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
+
+# ASSERTS_TENANT and ASSERTS_PASSWORD are optional
 ASSERTS_TENANT: chief
 ASSERTS_PASSWORD: wrong
 

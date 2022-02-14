@@ -98,8 +98,29 @@ aws cloudformation create-stack \\
     --parameters ParameterKey=LayerS3Key,ParameterValue=s3://asserts-assets/asserts-aws-lambda-layer-js-1.zip
 ```
 
-* To add the layer to your function `MyLambdaFunction`, copy the `deployment/sample-config.yml` as `config.yml`. Specify
+* To add the layer to your function `Sample-Function`, copy the `deployment/sample-config.yml` as `config.yml`. Specify
   the function name and layer ARN and other environment properties and run the `manage_asserts_layer` script
+
+
+```
+# Supported operations are 'add-layer', 'update-version', 'update-env-variables', 'disable', 'enable'
+operation: add-layer
+
+# Layer arn needs to be specified for 'add' or 'update-version' operations
+layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-js:2
+
+# ASSERTS_METRICSTORE_HOST
+ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
+
+# ASSERTS_TENANT and ASSERTS_PASSWORD is optional
+ASSERTS_TENANT: chief
+ASSERTS_PASSWORD: wrong
+
+# Functions can be specified either through a regex pattern or through a list of function names
+# function_name_pattern: Sample.+
+function_names:
+  - Sample-Function
+```
 
 ```
 python manage_asserts_layer.py
