@@ -78,8 +78,8 @@ To create a layer from the zip -
 * Create a s3 bucket as follows
 
 ```
-aws cloudformation create-stack \\
-    --stack-name asserts-assets-s3-bucket \\
+aws cloudformation create-stack \
+    --stack-name asserts-assets-s3-bucket \
     --template-body file://$PWD/deployment/cfn-asserts-assets-s3bucket.yml
 ```
 
@@ -92,8 +92,8 @@ aws s3 cp asserts-aws-lambda-layer-js-1.zip s3://asserts-assets/asserts-aws-lamb
 * Create a Layer using the S3 url
 
 ```
-aws cloudformation create-stack \\
-    --stack-name asserts-aws-lambda-layer-js-1 \\
+aws cloudformation create-stack \
+    --stack-name asserts-aws-lambda-layer-js-1 \
     --template-body file://$PWD/cfn-asserts-lambda-layers.yml
     --parameters ParameterKey=LayerS3Key,ParameterValue=s3://asserts-assets/asserts-aws-lambda-layer-js-1.zip
 ```
