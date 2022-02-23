@@ -73,7 +73,7 @@ ls -al asserts-aws-lambda-layer-js*
 -rw-r--r--  1 radhakrishnanj  staff  13736954 Jan 14 13:18 asserts-aws-lambda-layer-js-1.zip
 ```
 
-To create a layer from the zip -
+To create a layer from the zip, follow these steps -
 
 * Create a s3 bucket as follows
 
@@ -104,17 +104,17 @@ aws cloudformation create-stack \
 
 ```
 # Supported operations are 'add-layer', 'update-version', 'update-env-variables', 'disable', 'enable'
-operation: add-layer
+operation: update-env-variables
 
 # Layer arn needs to be specified for 'add' or 'update-version' operations
-layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-js:2
+layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-js:3
 
-# ASSERTS_METRICSTORE_HOST
+# ASSERTS_METRICSTORE_HOST is required for 'add' operation
 ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
 
-# ASSERTS_TENANT and ASSERTS_PASSWORD is optional
-ASSERTS_TENANT: chief
-ASSERTS_PASSWORD: wrong
+# ASSERTS_TENANT and ASSERTS_PASSWORD are optional
+ASSERTS_TENANT_NAME: chief
+ASSERTS_PASSWORD: chieftenant
 
 # Functions can be specified either through a regex pattern or through a list of function names
 # function_name_pattern: Sample.+
