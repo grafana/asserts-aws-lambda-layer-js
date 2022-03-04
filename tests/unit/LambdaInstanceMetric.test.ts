@@ -4,7 +4,7 @@ import {mocked} from "jest-mock";
 
 jest.mock('prom-client');
 
-describe("Metrics should have been initialized", () => {
+describe("All Tests", () => {
     beforeEach(() => {
         process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"] = "128";
         process.env["AWS_LAMBDA_FUNCTION_NAME"] = "OrderProcessor";
@@ -27,26 +27,27 @@ describe("Metrics should have been initialized", () => {
         expect(lambdaInstance.labelValues).toBeTruthy();
         expect(lambdaInstance.labelValues.instance).toBeTruthy();
         expect(lambdaInstance.labelValues.namespace).toBe("AWS/Lambda");
-        expect(lambdaInstance.labelValues.asserts_site).toBe("us-west-2");
         expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_env).toBeFalsy();
+        expect(lambdaInstance.labelValues.asserts_site).toBeFalsy();
     });
 
     it("Label values are initialised with environment", () => {
         process.env["ASSERTS_ENVIRONMENT"] = "dev";
+        process.env["ASSERTS_SITE"] = "dev";
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelValues).toBeTruthy();
         expect(lambdaInstance.labelValues.instance).toBeTruthy();
         expect(lambdaInstance.labelValues.namespace).toBe("AWS/Lambda");
-        expect(lambdaInstance.labelValues.asserts_site).toBe("us-west-2");
         expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_env).toBe("dev");
+        expect(lambdaInstance.labelValues.asserts_site).toBe("dev");
     });
 
     it("Function context is not initialised yet", () => {
@@ -152,13 +153,5 @@ describe("Metrics should have been initialized", () => {
         mockIsSet.mockReturnValue(false);
         let result = await metricInstance.getAllMetricsAsText();
         expect(result).toBeNull();
-    })
-
-    it("Transform region code", async () => {
-        expect(LambdaInstanceMetrics.prototype.mapRegionCode('uswest1')).toBe('us-west-1');
-        expect(LambdaInstanceMetrics.prototype.mapRegionCode('uswest2')).toBe('us-west-2');
-        expect(LambdaInstanceMetrics.prototype.mapRegionCode('useast1')).toBe('us-east-1');
-        expect(LambdaInstanceMetrics.prototype.mapRegionCode('useast2')).toBe('us-east-2');
-        expect(LambdaInstanceMetrics.prototype.mapRegionCode('other')).toBe('other');
     })
 });
