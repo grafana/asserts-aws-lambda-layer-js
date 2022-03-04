@@ -24,7 +24,7 @@ export class LambdaInstanceMetrics {
         asserts_source: string;
         asserts_tenant?: string;
         tenant?: string;
-        asserts_site: string | undefined;
+        asserts_site?: string | undefined;
         asserts_env?: string | undefined;
     };
 
@@ -58,12 +58,16 @@ export class LambdaInstanceMetrics {
         this.labelValues = {
             namespace: "AWS/Lambda",
             instance: hostname() + ":" + process.pid,
-            asserts_source: 'prom-client',
-            asserts_site: this.mapRegionCode(process.env['AWS_REGION'])
+            asserts_source: 'prom-client'
         };
         this.labelValues.function_name = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.job = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.version = process.env["AWS_LAMBDA_FUNCTION_VERSION"];
+
+        if (process.env["ASSERTS_SITE"]) {
+            this.labelValues.asserts_site = process.env["ASSERTS_SITE"];
+        }
+
         if (process.env["ASSERTS_ENVIRONMENT"]) {
             this.labelValues.asserts_env = process.env["ASSERTS_ENVIRONMENT"];
         }
@@ -103,20 +107,5 @@ export class LambdaInstanceMetrics {
 
     isNameAndVersionSet(): boolean {
         return !!(this.labelValues.job && this.labelValues.function_name && this.labelValues.version);
-    }
-
-    mapRegionCode(region: string | undefined) {
-        switch (region) {
-            case 'uswest1':
-                return 'us-west-1';
-            case 'uswest2':
-                return 'us-west-2';
-            case 'useast1':
-                return 'us-east-1';
-            case 'useast2':
-                return 'us-east-2';
-            default:
-                return region;
-        }
     }
 }
