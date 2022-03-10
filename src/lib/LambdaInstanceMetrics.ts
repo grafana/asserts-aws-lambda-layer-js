@@ -15,6 +15,7 @@ export class LambdaInstanceMetrics {
     invocations: Counter<string>;
     errors: Counter<string>;
     latency: Histogram<string>;
+    debugEnabled: boolean = false;
     labelValues: {
         job?: string;
         function_name?: string;
@@ -64,6 +65,10 @@ export class LambdaInstanceMetrics {
         this.labelValues.job = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.version = process.env["AWS_LAMBDA_FUNCTION_VERSION"];
 
+        if (process.env["DEBUG"] && process.env["DEBUG"] === 'true') {
+            this.debugEnabled = true;
+        }
+
         if (process.env["ASSERTS_SITE"]) {
             this.labelValues.asserts_site = process.env["ASSERTS_SITE"];
         }
@@ -98,7 +103,9 @@ export class LambdaInstanceMetrics {
         if (this.isNameAndVersionSet()) {
             globalRegister.setDefaultLabels(this.labelValues);
             const metrics = await globalRegister.metrics();
-            console.log("Gathered metrics:\n" + metrics);
+            if (this.debugEnabled) {
+                console.log("Gathered metrics:\n" + metrics);
+            }
             return metrics;
         } else {
             return Promise.resolve(null);

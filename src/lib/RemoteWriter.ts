@@ -13,6 +13,7 @@ export class RemoteWriter {
     lambdaInstance: LambdaInstanceMetrics;
     taskTimer?: TaskTimer;
     cancelled: boolean = false;
+    debugEnabled: boolean = false;
     private static singleton: RemoteWriter = new RemoteWriter();
 
     static getSingleton() {
@@ -38,6 +39,11 @@ export class RemoteWriter {
             process.env.ASSERTS_LAYER_DISABLED !== 'true') {
             this.startRemoteWriter();
         }
+
+        if (process.env.DEBUG && process.env.DEBUG === 'true') {
+            this.debugEnabled = true;
+        }
+
         RemoteWriter.singleton = this;
     }
 
@@ -56,7 +62,7 @@ export class RemoteWriter {
     }
 
     async flushMetrics() {
-        console.log("Timer task flushing metrics...");
+        RemoteWriter.getSingleton().logDebug("Timer task flushing metrics...");
         const _this = RemoteWriter.singleton;
         if (!_this.cancelled) {
             await _this.writeMetrics();
@@ -88,14 +94,15 @@ export class RemoteWriter {
                 const req = request(options, this.responseCallback)
                 req.on('error', this.requestErrorHandler);
                 req.write(text, () => {
-                    console.log("Flushed metrics to remote");
+                    RemoteWriter.getSingleton().logDebug("Flushed metrics to remote");
                 });
                 req.end();
             } else {
-                console.log("Function name and version not known yet");
+                RemoteWriter.getSingleton().logDebug("Function name and version not known yet");
             }
         } else {
-            console.log("Asserts Cloud Remote Write Configuration in complete: \n", JSON.stringify(this.remoteWriteConfig));
+            RemoteWriter.getSingleton().logDebug("Asserts Cloud Remote Write Configuration in complete: \n" +
+                JSON.stringify(this.remoteWriteConfig));
         }
     }
 
@@ -108,16 +115,22 @@ export class RemoteWriter {
     }
 
     responseCallback(res: any) {
-        console.log(`POST Asserts Metric API statusCode: ${res.statusCode}`);
+        RemoteWriter.getSingleton().logDebug(`POST Asserts Metric API statusCode: ${res.statusCode}`);
         if (res.statusCode!.toString() === "400") {
-            console.log("Response: " + JSON.stringify(res));
+            RemoteWriter.getSingleton().logDebug("Response: " + JSON.stringify(res));
         }
         const _this = RemoteWriter.singleton;
         res.on('data', _this.responseDataHandler);
     }
 
     responseDataHandler(data: any) {
-        console.log('POST to Asserts Metric API returned: ' + data.toString());
+        RemoteWriter.getSingleton().logDebug('POST to Asserts Metric API returned: ' + data.toString());
+    }
+
+    logDebug(message: string) {
+        if (this.debugEnabled) {
+            console.log(message);
+        }
     }
 
     requestErrorHandler(error: any) {

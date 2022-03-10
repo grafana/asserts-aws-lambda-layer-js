@@ -1,6 +1,6 @@
 {
   "name": "asserts-aws-lambda-layer",
-  "version": "1",
+  "version": "VERSION",
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
   "main": "src/index.js",
   "files": [
@@ -16,15 +16,15 @@
     "jtest": "^0.0.1",
     "prom-client": "14.0.1",
     "tasktimer": "3.0.0",
-    "test": "^0.6.0",
+    "test": "^0.VERSION.0",
     "ts-node": "^10.4.0",
     "tsc": "^2.0.4"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.86",
+    "@types/aws-lambda": "^8.10.8VERSION",
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^27.4.0",
-    "@types/node": "^16.11.12",
+    "@types/node": "^1VERSION.11.12",
     "jest": "^27.4.7",
     "ts-jest": "27.1.2",
     "typescript": "^3.9.10"
