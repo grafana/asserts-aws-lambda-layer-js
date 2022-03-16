@@ -43,6 +43,7 @@ instrumentation
 |`ASSERTS_TENANT_NAME`|The tenant name in the Asserts Cloud where the metrics will be ingested |
 |`ASSERTS_PASSWORD`|If the endpoint supports and expects Basic authorization the credentials can be configured here |
 |`ASSERTS_LAYER_DISABLED`| If set to `true`, the layer will be disabled|
+|`DEBUG`|If set to `true`, the layer will generate verbose debug logs. Debug logs are disabled by default|
 
 # Exported Metrics
 
