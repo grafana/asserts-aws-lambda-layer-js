@@ -61,14 +61,7 @@ are also exported.
 To build the layer,
 
 ```
-npm install tsc
-npm install ts-node
-npm install jest
-npm install
-tsc
-rm tests/unit/*.js
-npm test
-npm pack
+export VERSION=1
 ./build-layer.sh
 ls -al asserts-aws-lambda-layer-js*
 -rw-r--r--  1 radhakrishnanj  staff  13736954 Jan 14 13:18 asserts-aws-lambda-layer-js-1.zip
@@ -104,18 +97,18 @@ aws cloudformation create-stack \
 
 
 ```
-# Supported operations are 'add-layer', 'update-version', 'update-env-variables', 'disable', 'enable'
+# Supported operations are 'add-layer', 'remove-layer', 'update-version', 'update-env-variables', 'disable', 'enable'
 operation: update-env-variables
 
 # Layer arn needs to be specified for 'add' or 'update-version' operations
 layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-js:3
 
-# ASSERTS_METRICSTORE_HOST is required for 'add' operation
+# ASSERTS_METRICSTORE_HOST is required for 'add-layer' operation
 ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
 
 # ASSERTS_TENANT and ASSERTS_PASSWORD are optional
 ASSERTS_TENANT_NAME: chief
-ASSERTS_PASSWORD: chieftenant
+ASSERTS_PASSWORD: <SPECIFY-THE-PASSWORD-HERE>
 
 # Functions can be specified either through a regex pattern or through a list of function names
 # function_name_pattern: Sample.+
