@@ -16,4 +16,3 @@ mv asserts-aws-lambda-layer-js-$VERSION.zip ../..
 cd ../..
 rm -fR build
 rm asserts-aws-lambda-layer-*.tgz
-#sed -iE "s/$VERSION/VERSION/g" package.json
