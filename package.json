@@ -1,5 +1,5 @@
 {
-  "name": "@asserts/asserts-aws-lambda-layer",
+  "name": "asserts-aws-lambda-layer",
   "version": "VERSION",
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
   "main": "src/index.js",
