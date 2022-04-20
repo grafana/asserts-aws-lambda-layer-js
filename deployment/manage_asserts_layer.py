@@ -42,6 +42,7 @@ variables = {
     'NODE_OPTIONS': '-r asserts-aws-lambda-layer/awslambda-auto'
 }
 host = 'ASSERTS_METRICSTORE_HOST'
+port = 'ASSERTS_METRICSTORE_PORT'
 tenant_name = 'ASSERTS_TENANT_NAME'
 password = 'ASSERTS_PASSWORD'
 env = 'ASSERTS_ENVIRONMENT'
@@ -53,6 +54,8 @@ if operation in 'add-layer' and config.get(host) is None:
 
 if config.get(host) is not None:
     variables['ASSERTS_METRICSTORE_HOST'] = config[host]
+if config.get(port) is not None:
+    variables['ASSERTS_METRICSTORE_PORT'] = config[port]
 if config.get(tenant_name) is not None:
     variables['ASSERTS_TENANT_NAME'] = config[tenant_name]
 if config.get(password) is not None:
