@@ -1,11 +1,13 @@
 'use strict';
 import {LambdaInstanceMetrics} from './LambdaInstanceMetrics';
-import {request} from 'https';
+import {request as https} from 'https';
+import {request as http} from 'http';
 import {TaskTimer} from "tasktimer";
 
 export class RemoteWriter {
     remoteWriteConfig: {
         hostName?: string | undefined;
+        port?: number | undefined;
         tenantName?: string | undefined;
         password?: string | undefined;
         isComplete: boolean;
@@ -28,6 +30,12 @@ export class RemoteWriter {
             password: process.env["ASSERTS_PASSWORD"],
             isComplete: false
         };
+
+        if (process.env["ASSERTS_METRICSTORE_PORT"] && process.env["ASSERTS_METRICSTORE_PORT"] !== 'undefined') {
+            this.remoteWriteConfig.port = parseInt(process.env["ASSERTS_METRICSTORE_PORT"]);
+        } else {
+            this.remoteWriteConfig.port = 443;
+        }
 
         if (this.remoteWriteConfig.tenantName && this.remoteWriteConfig.tenantName !== 'undefined') {
             this.lambdaInstance.setTenant((this.remoteWriteConfig.tenantName as (string)));
@@ -82,7 +90,7 @@ export class RemoteWriter {
             if (text != null) {
                 const options = {
                     hostname: this.remoteWriteConfig.hostName,
-                    port: 80,
+                    port: this.remoteWriteConfig.port,
                     path: '/api/v1/import/prometheus',
                     method: 'POST',
                     headers: {
@@ -91,7 +99,8 @@ export class RemoteWriter {
                     }
                 };
                 this.setAuthHeaders(options);
-                const req = request(options, this.responseCallback)
+                const req = options.port === 443 ? https(options, this.responseCallback) :
+                    http(options, this.responseCallback);
                 req.on('error', this.requestErrorHandler);
                 req.write(text, () => {
                     RemoteWriter.getSingleton().logDebug("Flushed metrics to remote");

@@ -6,6 +6,8 @@ layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-
 
 # ASSERTS_METRICSTORE_HOST is required for 'add' operation
 ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
+# Specify the port if it is different from 443
+# ASSERTS_METRICSTORE_PORT: 80
 
 # ASSERTS_TENANT and ASSERTS_PASSWORD are optional
 ASSERTS_TENANT: chief
