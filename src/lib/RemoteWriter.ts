@@ -82,7 +82,7 @@ export class RemoteWriter {
             if (text != null) {
                 const options = {
                     hostname: this.remoteWriteConfig.hostName,
-                    port: 443,
+                    port: 80,
                     path: '/api/v1/import/prometheus',
                     method: 'POST',
                     headers: {
