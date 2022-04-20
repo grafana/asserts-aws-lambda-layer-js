@@ -2,8 +2,10 @@ import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
 import {RemoteWriter} from "../../src/lib/RemoteWriter";
 import {TaskTimer} from 'tasktimer';
 import * as https from "https";
+import * as http from "http";
 
 jest.mock('https', () => require('../__mocks__/https'));
+jest.mock('http', () => require('../__mocks__/http'));
 
 describe("Handler Wrapper works for async and sync", () => {
     const mockIsSet: jest.Mock = jest.fn();
@@ -19,7 +21,8 @@ describe("Handler Wrapper works for async and sync", () => {
     const mockedOn = jest.fn();
     const mockedFlushMetrics = jest.fn();
     const mockedGetAllMetrics = jest.fn();
-    const mockedRequest: jest.Mock = (https.request as jest.Mock);
+    const mockedHttpsRequest: jest.Mock = (https.request as jest.Mock);
+    const mockedHttpRequest: jest.Mock = (http.request as jest.Mock);
 
     const mockedReq = {
         on: jest.fn(), write: jest.fn(), end: jest.fn()
@@ -131,11 +134,11 @@ describe("Handler Wrapper works for async and sync", () => {
         const remoteWriter: RemoteWriter = new RemoteWriter();
         expect(mockedOn).toHaveBeenCalledWith('tick', mockedFlushMetrics);
 
-        mockedRequest.mockReturnValue(mockedReq);
+        mockedHttpsRequest.mockReturnValue(mockedReq);
 
         await remoteWriter.writeMetrics();
 
-        expect(mockedRequest).toHaveBeenCalledWith({
+        expect(mockedHttpsRequest).toHaveBeenCalledWith({
             hostname: 'host',
             port: 443,
             path: '/api/v1/import/prometheus',
@@ -168,12 +171,12 @@ describe("Handler Wrapper works for async and sync", () => {
         const remoteWriter: RemoteWriter = new RemoteWriter();
         expect(mockedOn).toHaveBeenCalledWith('tick', mockedFlushMetrics);
 
-        mockedRequest.mockReturnValue(mockedReq);
+        mockedHttpsRequest.mockReturnValue(mockedReq);
 
         await remoteWriter.writeMetrics();
 
         const credentials = remoteWriter.remoteWriteConfig.tenantName + ':' + remoteWriter.remoteWriteConfig.password;
-        expect(mockedRequest).toHaveBeenCalledWith({
+        expect(mockedHttpsRequest).toHaveBeenCalledWith({
             hostname: 'host',
             port: 443,
             path: '/api/v1/import/prometheus',
@@ -208,12 +211,12 @@ describe("Handler Wrapper works for async and sync", () => {
         const remoteWriter: RemoteWriter = new RemoteWriter();
         expect(mockedOn).toHaveBeenCalledWith('tick', mockedFlushMetrics);
 
-        mockedRequest.mockReturnValue(mockedReq);
+        mockedHttpRequest.mockReturnValue(mockedReq);
 
         await remoteWriter.writeMetrics();
 
         const credentials = remoteWriter.remoteWriteConfig.tenantName + ':' + remoteWriter.remoteWriteConfig.password;
-        expect(mockedRequest).toHaveBeenCalledWith({
+        expect(mockedHttpRequest).toHaveBeenCalledWith({
             hostname: 'host',
             port: 80,
             path: '/api/v1/import/prometheus',
