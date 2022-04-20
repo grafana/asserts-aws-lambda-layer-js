@@ -89,7 +89,7 @@ aws s3 cp asserts-aws-lambda-layer-js-1.zip s3://asserts-assets/asserts-aws-lamb
 ```
 aws cloudformation create-stack \
     --stack-name asserts-aws-lambda-layer-js-1 \
-    --template-body file://$PWD/cfn-asserts-lambda-layers.yml
+    --template-body file://$PWD/deployment/cfn-asserts-lambda-layers.yml
     --parameters ParameterKey=LayerS3Key,ParameterValue=s3://asserts-assets/asserts-aws-lambda-layer-js-1.zip
 ```
 
@@ -106,6 +106,9 @@ layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-
 
 # ASSERTS_METRICSTORE_HOST is required for 'add-layer' operation
 ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
+
+# ASSERTS_METRICSTORE_PORT can optionally be specified to change from https to http by specifing a port different than 443
+# ASSERTS_METRICSTORE_PORT=80
 
 # ASSERTS_TENANT and ASSERTS_PASSWORD are optional
 ASSERTS_TENANT_NAME: chief
