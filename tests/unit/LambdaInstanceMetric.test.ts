@@ -9,7 +9,8 @@ describe("All Tests", () => {
         process.env["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"] = "128";
         process.env["AWS_LAMBDA_FUNCTION_NAME"] = "OrderProcessor";
         process.env["AWS_LAMBDA_FUNCTION_VERSION"] = "1";
-        process.env["AWS_REGION"] = "us-west-2";
+        process.env['AWS_REGION'] = "us-west-2";
+        process.env['ACCOUNT_ID'] = "123123123";
         jest.clearAllMocks();
     })
 
@@ -17,8 +18,8 @@ describe("All Tests", () => {
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelNames)
             .toStrictEqual([
-                'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
-                'function_name', 'instance', 'job', 'namespace',
+                'account_id', 'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
+                'function_name', 'instance', 'job', 'namespace', 'region',
                 'tenant', 'version']);
     });
 
@@ -26,6 +27,8 @@ describe("All Tests", () => {
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelValues).toBeTruthy();
         expect(lambdaInstance.labelValues.instance).toBeTruthy();
+        expect(lambdaInstance.labelValues.account_id).toBe("123123123");
+        expect(lambdaInstance.labelValues.region).toBe("us-west-2");
         expect(lambdaInstance.labelValues.namespace).toBe("AWS/Lambda");
         expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
@@ -40,6 +43,8 @@ describe("All Tests", () => {
         process.env["ASSERTS_SITE"] = "dev";
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelValues).toBeTruthy();
+        expect(lambdaInstance.labelValues.account_id).toBe("123123123");
+        expect(lambdaInstance.labelValues.region).toBe("us-west-2");
         expect(lambdaInstance.labelValues.instance).toBeTruthy();
         expect(lambdaInstance.labelValues.namespace).toBe("AWS/Lambda");
         expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")

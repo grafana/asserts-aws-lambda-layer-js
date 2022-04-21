@@ -5,6 +5,9 @@ import yaml
 # Get the Lambda Client
 lambda_client = boto3.client('lambda')
 
+# Get the sts Client
+sts_client = boto3.client('sts')
+
 file = open('config.yml', 'r')
 config = yaml.safe_load(file)
 if config is None:
@@ -41,6 +44,7 @@ if operation == 'add-layer' and layer_arn is None:
 variables = {
     'NODE_OPTIONS': '-r asserts-aws-lambda-layer/awslambda-auto'
 }
+account_id = 'ACCOUNT_ID'
 host = 'ASSERTS_METRICSTORE_HOST'
 port = 'ASSERTS_METRICSTORE_PORT'
 tenant_name = 'ASSERTS_TENANT_NAME'
@@ -64,6 +68,9 @@ if config.get(env) is not None:
     variables['ASSERTS_ENVIRONMENT'] = config[env]
 if config.get(site) is not None:
     variables['ASSERTS_SITE'] = config[site]
+
+caller_identity = sts_client.get_caller_identity()
+variables['ACCOUNT_ID'] = caller_identity.get('Account')
 
 def update_all_functions():
     # List the functions
