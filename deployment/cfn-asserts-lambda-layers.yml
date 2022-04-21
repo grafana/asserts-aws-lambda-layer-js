@@ -15,6 +15,7 @@ Resources:
       LayerName: asserts-aws-lambda-layer-js
       CompatibleRuntimes:
         - nodejs14.x
+        - nodejs12.x
       Content:
         S3Bucket: asserts-assets
         S3Key: !Ref LayerS3Key
