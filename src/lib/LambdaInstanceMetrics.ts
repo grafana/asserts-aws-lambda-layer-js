@@ -9,14 +9,16 @@ collectDefaultMetrics({
 export class LambdaInstanceMetrics {
     // asserts_env will be optionally sent if configured so in the environment variable
     labelNames: string[] = [
-        'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
-        'function_name', 'instance', 'job', 'namespace',
+        'account_id', 'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
+        'function_name', 'instance', 'job', 'namespace',  'region',
         'tenant', 'version'];
     invocations: Counter<string>;
     errors: Counter<string>;
     latency: Histogram<string>;
     debugEnabled: boolean = false;
     labelValues: {
+        account_id?: string;
+        region: string;
         job?: string;
         function_name?: string;
         version?: string;
@@ -57,6 +59,7 @@ export class LambdaInstanceMetrics {
         globalRegister.registerMetric(this.latency);
 
         this.labelValues = {
+            region: (process.env['AWS_REGION'] as string),
             namespace: "AWS/Lambda",
             instance: hostname() + ":" + process.pid,
             asserts_source: 'prom-client'
@@ -64,6 +67,7 @@ export class LambdaInstanceMetrics {
         this.labelValues.function_name = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.job = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.version = process.env["AWS_LAMBDA_FUNCTION_VERSION"];
+        this.labelValues.account_id = process.env["ACCOUNT_ID"];
 
         if (process.env["DEBUG"] && process.env["DEBUG"] === 'true') {
             this.debugEnabled = true;
@@ -75,6 +79,10 @@ export class LambdaInstanceMetrics {
 
         if (process.env["ASSERTS_ENVIRONMENT"]) {
             this.labelValues.asserts_env = process.env["ASSERTS_ENVIRONMENT"];
+        }
+
+        if (process.env["ACCOUNT_ID"]) {
+            this.labelValues.account_id = process.env["ACCOUNT_ID"];
         }
     }
 
