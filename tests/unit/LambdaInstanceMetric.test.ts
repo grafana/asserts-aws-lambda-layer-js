@@ -34,13 +34,13 @@ describe("All Tests", () => {
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
-        expect(lambdaInstance.labelValues.asserts_env).toBeFalsy();
-        expect(lambdaInstance.labelValues.asserts_site).toBeFalsy();
+        expect(lambdaInstance.labelValues.asserts_site).toBe('us-west-2');
+        expect(lambdaInstance.labelValues.asserts_env).toBe('123123123');
     });
 
     it("Label values are initialised with environment", () => {
         process.env["ASSERTS_ENVIRONMENT"] = "dev";
-        process.env["ASSERTS_SITE"] = "dev";
+        process.env["ASSERTS_SITE"] = "us-west-1";
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelValues).toBeTruthy();
         expect(lambdaInstance.labelValues.account_id).toBe("123123123");
@@ -52,7 +52,7 @@ describe("All Tests", () => {
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_env).toBe("dev");
-        expect(lambdaInstance.labelValues.asserts_site).toBe("dev");
+        expect(lambdaInstance.labelValues.asserts_site).toBe("us-west-1");
     });
 
     it("Function context is not initialised yet", () => {
