@@ -72,6 +72,7 @@ if config.get(site) is not None:
 caller_identity = sts_client.get_caller_identity()
 variables['ACCOUNT_ID'] = caller_identity.get('Account')
 
+
 def update_all_functions():
     # List the functions
     next_marker: str
@@ -87,7 +88,7 @@ def update_all_functions():
 
 def update_functions(fns):
     for fn in fns['Functions']:
-        if fn['Runtime'] in ['nodejs14.x','nodejs12.x'] and should_update_fn(fn):
+        if fn['Runtime'] in ['nodejs14.x', 'nodejs12.x'] and should_update_fn(fn):
             if operation == 'add-layer':
                 add_layer(fn)
             elif operation == 'remove-layer':
@@ -192,9 +193,20 @@ def update_fn(fn, _env, layers):
 
 
 def merge_variables(_env, fn):
+    provided_vars = list(variables.keys())
+    provided_vars.sort()
     _variables = fn['Environment']['Variables']
+    current_vars = list(_variables.keys())
+    current_vars.sort()
     _variables.update(variables)
-    _env['Variables'] = _variables
+    print('Current  : ' + ', '.join(current_vars))
+    print('Provided : ' + ', '.join(provided_vars))
+    for var in ['ASSERTS_ENVIRONMENT', 'ASSERTS_SITE']:
+        if var in current_vars and var not in provided_vars:
+            _variables.pop(var)
+    updated_vars = list(_variables.keys())
+    updated_vars.sort()
+    print('Final    : ' + ', '.join(updated_vars))
 
 
 def get_asserts_layer(fn):
