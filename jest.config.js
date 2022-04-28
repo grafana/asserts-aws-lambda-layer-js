@@ -5,4 +5,8 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageProvider: "v8",
+  reporters: [
+    "default",
+    ["jest-junit", {"outputDirectory": "reports", "outputName": "report.xml"}]
+  ]
 };
