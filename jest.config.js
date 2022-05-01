@@ -3,10 +3,10 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: true,
-  coverageDirectory: "coverage",
+  coverageDirectory: "dist/tests/coverage",
   coverageProvider: "v8",
   reporters: [
     "default",
-    ["jest-junit", {"outputDirectory": "reports", "outputName": "report.xml"}]
+    ["jest-junit", {"outputDirectory": "dist/tests", "outputName": "report.xml"}]
   ]
 };
