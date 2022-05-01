@@ -28,9 +28,12 @@
   },
   "scripts": {
     "clean": "rimraf dist",
+    "clean-all": "rimraf dist package-lock.json awslambda-auto.js ./**/*.d.ts ./**/*.js.map tests/unit/*.js src/**/*.js && rm -rf node_modules",
+    "clean-cache": "npm cache clean --force",
     "prebuild": "npm i",
     "build": "tsc",
     "rebuild": "npm run clean && npm run buid",
+    "pretest": "npm i",
     "test": "jest --colors",
     "prepack": "npm run build",
     "postpack": "npm run init-layer && npm run move-tarball && npm run update-layer-version && npm run update-layer-dependency && npm run optimize-layer && npm run zip-up-layer && npm run move-zip",
@@ -42,7 +45,9 @@
     "move-tarball": "mv asserts-aws-lambda-layer-${npm_package_version}.tgz dist/archive/asserts-aws-lambda-layer-${npm_package_version}.tgz",
     "unzip-tarball": "cd dist/archive && tar -xf asserts-aws-lambda-layer-${npm_package_version}.tgz",
     "move-zip": "mv dist/asserts-aws-lambda-layer-js-${npm_package_version}.zip dist/archive/asserts-aws-lambda-layer-js-${npm_package_version}.zip",
-    "unzip-layer": "cd dist/archive && unzip asserts-aws-lambda-layer-js-${npm_package_version}.zip"
+    "unzip-layer": "cd dist/archive && unzip asserts-aws-lambda-layer-js-${npm_package_version}.zip",
+    "start": "docker run --rm -it -v \"$(pwd)\":/app $(docker build -q .)",
+    "stop": "echo \"Just enter: exit\""
   },
   "repository": {
     "type": "git",
