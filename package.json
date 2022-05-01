@@ -26,6 +26,27 @@
     "ts-jest": "27.1.2",
     "typescript": "^3.9.10"
   },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "coverageDirectory": "dist/tests/coverage",
+    "coverageProvider": "v8",
+    "coverageReporters": [
+      "text",
+      "cobertura"
+    ],
+    "reporters": [
+      "default",
+      [
+        "jest-junit",
+        {
+          "outputDirectory": "dist/tests",
+          "outputName": "report.xml"
+        }
+      ]
+    ]
+  },
   "scripts": {
     "clean": "rimraf dist",
     "clean-all": "rimraf dist package-lock.json awslambda-auto.js ./**/*.d.ts ./**/*.js.map tests/unit/*.js src/**/*.js && rm -rf node_modules",
