@@ -3,7 +3,7 @@ node_modules
 .idea/
 node_modules/
 *.log
-coverage/
+dist/
 package-lock.json
 **/*.d.ts
 **/*.map
