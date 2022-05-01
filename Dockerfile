@@ -11,4 +11,4 @@ RUN npm set unsafe-perm true
 RUN npm set git-tag-version false
 USER root
 
-ENTRYPOINT /bin/sh -C
+ENTRYPOINT [ "/bin/sh", "-c" ]
