@@ -46,6 +46,7 @@
     "unzip-tarball": "cd dist/archive && tar -xf asserts-aws-lambda-layer-${npm_package_version}.tgz",
     "move-zip": "mv dist/asserts-aws-lambda-layer-js-${npm_package_version}.zip dist/archive/asserts-aws-lambda-layer-js-${npm_package_version}.zip",
     "unzip-layer": "cd dist/archive && unzip asserts-aws-lambda-layer-js-${npm_package_version}.zip",
+    "prestart": "npm i",
     "start": "docker run --rm -it -v \"$(pwd)\":/app $(docker build -q .)",
     "stop": "echo \"Just enter: exit\""
   },
