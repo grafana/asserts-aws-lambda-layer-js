@@ -4,13 +4,8 @@
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
   "main": "src/index.js",
   "files": [
-    "awslambda-auto.ts",
-    "awslambda-auto.js",
-    "src/*.js",
-    "src/lib/*.js",
-    "*.json",
-    "src/*.d.ts",
-    "src/lib/*.d.ts"
+    "dist/*.js",
+    "dist/src/**/*.js"
   ],
   "dependencies": {
     "jtest": "^0.0.1",
@@ -36,7 +31,18 @@
     "prebuild": "npm i",
     "build": "tsc",
     "rebuild": "npm run clean && npm run buid",
-    "test": "jest --colors"
+    "test": "jest --colors",
+    "prepack": "npm run build",
+    "postpack": "npm run init-layer && npm run move-tarball && npm run update-layer-version && npm run update-layer-dependency && npm run optimize-layer && npm run zip-up-layer && npm run move-zip",
+    "init-layer": "mkdir -p dist/nodejs && mkdir -p dist/archive && cp layer.json dist/nodejs/package.json",
+    "update-layer-version": "cd dist/nodejs && npm version $npm_package_version --allow-same-version",
+    "update-layer-dependency": "cd dist/nodejs && npm i -S ../archive/asserts-aws-lambda-layer-${npm_package_version}.tgz",
+    "optimize-layer": "cd dist/nodejs && npm ci --production",
+    "zip-up-layer": "cd dist && zip -r asserts-aws-lambda-layer-js-${npm_package_version}.zip nodejs",
+    "move-tarball": "mv asserts-aws-lambda-layer-${npm_package_version}.tgz dist/archive/asserts-aws-lambda-layer-${npm_package_version}.tgz",
+    "unzip-tarball": "cd dist/archive && tar -xf asserts-aws-lambda-layer-${npm_package_version}.tgz",
+    "move-zip": "mv dist/asserts-aws-lambda-layer-js-${npm_package_version}.zip dist/archive/asserts-aws-lambda-layer-js-${npm_package_version}.zip",
+    "unzip-layer": "cd dist/archive && unzip asserts-aws-lambda-layer-js-${npm_package_version}.zip"
   },
   "repository": {
     "type": "git",
