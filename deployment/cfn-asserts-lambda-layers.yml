@@ -17,7 +17,7 @@ Resources:
         - nodejs12.x
       Content:
         S3Bucket: asserts-assets
-        S3Key: !Join ['', ['lambda/layer/nodejs/', !Ref LayerVersion, .zip']]
+        S3Key: !Sub lambda/layer/nodejs/${LayerVersion}.zip
       LayerName: asserts-aws-lambda-layer-js
       LicenseInfo: Apache-2.0
       Description: Asserts AWS Lambda Layer for NodeJS Runtime that exports resource and invocation metrics in prometheus format to the API endpoint /api/v1/import/prometheus on a configured host
