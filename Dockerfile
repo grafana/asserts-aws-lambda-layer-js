@@ -1,5 +1,4 @@
 FROM node:13.12.0 as build
-WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 RUN  apt-get update -y && \
      apt-get upgrade -y && \
@@ -9,6 +8,9 @@ RUN  apt-get update -y && \
 RUN apt-get install -y zip unzip
 RUN npm set unsafe-perm true
 RUN npm set git-tag-version false
-USER root
+RUN useradd -ms /bin/bash jenkins
+RUN adduser jenkins sudo
+USER jenkins
+WORKDIR /app
 
 ENTRYPOINT [ "/bin/sh", "-c" ]
