@@ -53,7 +53,7 @@
     "clean-cache": "npm cache clean --force",
     "prebuild": "npm i",
     "build": "tsc",
-    "rebuild": "npm run clean && npm run buid",
+    "rebuild": "npm run clean && npm run build",
     "pretest": "npm i",
     "test": "jest --colors",
     "prepack": "npm run build",
