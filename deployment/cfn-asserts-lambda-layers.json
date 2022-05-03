@@ -20,7 +20,7 @@
                     "nodejs12.x"
                 ],
                 "Content": {
-                    "S3Bucket": "asserts-assets",
+                    "S3Bucket": "cfn.asserts.ai",
                     "S3Key": {
                         "Fn::Sub": "lambda/layer/nodejs/${LayerVersion}.zip"
                     }
