@@ -22,7 +22,7 @@
                 "Content": {
                     "S3Bucket": "cfn.asserts.ai",
                     "S3Key": {
-                        "Fn::Sub": "lambda/layer/nodejs/${LayerVersion}.zip"
+                        "Fn::Sub": "lambda/layer/nodejs/version/${LayerVersion}.zip"
                     }
                 },
                 "LayerName": "asserts-aws-lambda-layer-js",
