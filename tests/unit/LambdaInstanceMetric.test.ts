@@ -1,4 +1,4 @@
-import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
+import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
 import {Counter, Histogram, register as globalRegister, Registry} from "prom-client";
 import {mocked} from "jest-mock";
 

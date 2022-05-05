@@ -1,6 +1,6 @@
 import {Context, SQSEvent, Callback} from 'aws-lambda';
-import * as AssertsSDK from "../../src/lib/HandlerWrapper";
-import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
+import * as AssertsSDK from "../../lib/HandlerWrapper";
+import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
 
 describe("Handler Wrapper works for async and sync", () => {
     const mockRecordInvocation: jest.Mock = jest.fn();

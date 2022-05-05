@@ -3,14 +3,14 @@ node_modules
 .idea/
 node_modules/
 *.log
-coverage/
+build/
 package-lock.json
 **/*.d.ts
 **/*.map
 *.tgz
 awslambda-auto.js
-src/*.js
-src/lib/*.js
+*.js
+lib/*.js
 tests/unit/*.js
 **/*.zip
 **/*.tgz

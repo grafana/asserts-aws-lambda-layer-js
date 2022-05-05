@@ -1,5 +1,5 @@
-import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
-import {RemoteWriter} from "../../src/lib/RemoteWriter";
+import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
+import {RemoteWriter} from "../../lib/RemoteWriter";
 import {TaskTimer} from 'tasktimer';
 import * as https from "https";
 import * as http from "http";
