@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Asserts NodeJS Lambda Layer",
+    "Description": "Asserts AWS Lambda Layer for NodeJS Runtime that exports resource and invocation metrics in prometheus format to the API endpoint /api/v1/import/prometheus on a configured host",
     "Parameters": {
         "LayerVersion": {
             "Type": "String",
@@ -27,7 +27,9 @@
                 },
                 "LayerName": "asserts-aws-lambda-layer-js",
                 "LicenseInfo": "Apache-2.0",
-                "Description": "Asserts AWS Lambda Layer for NodeJS Runtime that exports resource and invocation metrics in prometheus format to the API endpoint /api/v1/import/prometheus on a configured host"
+                "Description": {
+                    "Fn::Sub": "Asserts NodeJS Lambda Layer - ${LayerVersion}"
+                }
             }
         }
     }
