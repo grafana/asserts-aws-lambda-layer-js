@@ -42,7 +42,7 @@ if operation == 'add-layer' and layer_arn is None:
     raise ()
 
 variables = {
-    'NODE_OPTIONS': '-r asserts-aws-lambda-layer/dist/awslambda-auto'
+    'NODE_OPTIONS': '-r asserts-aws-lambda-layer/awslambda-auto'
 }
 account_id = 'ACCOUNT_ID'
 host = 'ASSERTS_METRICSTORE_HOST'

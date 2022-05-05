@@ -29,7 +29,7 @@ exports.handler = wrapHandler(async (event, context) => {
 For automatic instrumentation, the following environment variable needs to be defined in your Lambda function
 
 ```
-NODE_OPTIONS = -r asserts-aws-lambda-layer/dist/awslambda-auto
+NODE_OPTIONS = -r asserts-aws-lambda-layer/awslambda-auto
 ```
 
 # Environment variables for forwarding metrics to a prometheus end-point
