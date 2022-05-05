@@ -2,10 +2,11 @@
   "name": "asserts-aws-lambda-layer",
   "version": "1.0.0",
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
-  "main": "src/index.js",
+  "main": "index.js",
   "files": [
-    "dist/*.js",
-    "dist/src/**/*.js"
+    "*.js",
+    "**/*.js",
+    "!tests"
   ],
   "dependencies": {
     "jtest": "^0.0.1",
@@ -30,7 +31,7 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "collectCoverage": true,
-    "coverageDirectory": "dist/tests/coverage",
+    "coverageDirectory": "build/tests/coverage",
     "coverageProvider": "v8",
     "coverageReporters": [
       "text",
@@ -41,15 +42,15 @@
       [
         "jest-junit",
         {
-          "outputDirectory": "dist/tests",
+          "outputDirectory": "build/tests",
           "outputName": "report.xml"
         }
       ]
     ]
   },
   "scripts": {
-    "clean": "rimraf dist",
-    "clean-all": "rimraf dist package-lock.json awslambda-auto.js ./**/*.d.ts ./**/*.js.map tests/unit/*.js src/**/*.js && rm -rf node_modules",
+    "clean": "rimraf build",
+    "clean-all": "rimraf build package-lock.json awslambda-auto.js ./**/*.d.ts ./**/*.js.map tests/unit/*.js src/**/*.js && rm -rf node_modules",
     "clean-cache": "npm cache clean --force",
     "prebuild": "npm i",
     "build": "tsc",
@@ -58,16 +59,16 @@
     "test": "jest --colors",
     "prepack": "npm run build",
     "postpack": "npm run init-layer && npm run update-layer && npm run zip-up-layer",
-    "init-layer": "mkdir -p dist/nodejs && mkdir -p dist/archive && cp layer.json dist/nodejs/package.json && npm run move-tarball",
-    "update-layer-version": "cd dist/nodejs && npm version $npm_package_version --allow-same-version",
-    "update-layer-dependency": "cd dist/nodejs && npm i -S ../archive/asserts-aws-lambda-layer-${npm_package_version}.tgz",
+    "init-layer": "mkdir -p build/nodejs && mkdir -p build/archive && cp layer.json build/nodejs/package.json && npm run move-tarball",
+    "update-layer-version": "cd build/nodejs && npm version $npm_package_version --allow-same-version",
+    "update-layer-dependency": "cd build/nodejs && npm i -S ../archive/asserts-aws-lambda-layer-${npm_package_version}.tgz",
     "update-layer": "npm run update-layer-version && npm run update-layer-dependency",
-    "optimize-layer": "cd dist/nodejs && npm ci --production",
-    "zip-up-layer": "npm run optimize-layer && cd dist && zip -r asserts-aws-lambda-layer-js-${npm_package_version}.zip nodejs && npm run move-zip",
-    "move-tarball": "mv asserts-aws-lambda-layer-${npm_package_version}.tgz dist/archive/asserts-aws-lambda-layer-${npm_package_version}.tgz",
-    "unzip-tarball": "cd dist/archive && tar -xf asserts-aws-lambda-layer-${npm_package_version}.tgz",
-    "move-zip": "mv dist/asserts-aws-lambda-layer-js-${npm_package_version}.zip dist/archive/asserts-aws-lambda-layer-js-${npm_package_version}.zip",
-    "unzip-layer": "cd dist/archive && unzip asserts-aws-lambda-layer-js-${npm_package_version}.zip",
+    "optimize-layer": "cd build/nodejs && npm ci --production",
+    "zip-up-layer": "npm run optimize-layer && cd build && zip -r asserts-aws-lambda-layer-js-${npm_package_version}.zip nodejs && npm run move-zip",
+    "move-tarball": "mv asserts-aws-lambda-layer-${npm_package_version}.tgz build/archive/asserts-aws-lambda-layer-${npm_package_version}.tgz",
+    "unzip-tarball": "cd build/archive && tar -xf asserts-aws-lambda-layer-${npm_package_version}.tgz",
+    "move-zip": "mv build/asserts-aws-lambda-layer-js-${npm_package_version}.zip build/archive/asserts-aws-lambda-layer-js-${npm_package_version}.zip",
+    "unzip-layer": "cd build/archive && unzip asserts-aws-lambda-layer-js-${npm_package_version}.zip",
     "prestart": "npm i",
     "start": "docker run --rm -it -v \"$(pwd)\":/app $(docker build -q .)",
     "stop": "echo \"Just enter: exit\"",

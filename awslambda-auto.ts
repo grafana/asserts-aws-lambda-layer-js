@@ -1,4 +1,4 @@
-import { DynamicPatcher } from './src/lib/DynamicPatcher';
-import './src/lib/RemoteWriter';
+import { DynamicPatcher } from './lib/DynamicPatcher';
+import './lib/RemoteWriter';
 
 new DynamicPatcher().patchHandler();

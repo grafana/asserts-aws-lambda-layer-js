@@ -1,6 +1,6 @@
 'use strict';
-import {DynamicPatcher} from "../../src/lib/DynamicPatcher";
-import {LambdaInstanceMetrics} from "../../src/lib/LambdaInstanceMetrics";
+import {DynamicPatcher} from "../../lib/DynamicPatcher";
+import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
 
 LambdaInstanceMetrics.prototype.recordInvocation = jest.fn();
 LambdaInstanceMetrics.prototype.recordLatency = jest.fn();
