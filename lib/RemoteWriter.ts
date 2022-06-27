@@ -23,6 +23,10 @@ export class RemoteWriter {
     }
 
     constructor() {
+        if (process.env.DEBUG && process.env.DEBUG === 'true') {
+            this.debugEnabled = true;
+        }
+
         this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
         this.remoteWriteConfig = {
             hostName: process.env["ASSERTS_METRICSTORE_HOST"],
@@ -42,17 +46,15 @@ export class RemoteWriter {
         }
 
         this.remoteWriteConfig.isComplete = this.remoteWriteConfig.hostName !== 'undefined';
+
+        RemoteWriter.singleton = this;
         if (this.remoteWriteConfig.isComplete && !process.env.ASSERTS_LAYER_DISABLED &&
             process.env.ASSERTS_LAYER_DISABLED !== 'undefined' &&
             process.env.ASSERTS_LAYER_DISABLED !== 'true') {
+            // Flush once immediately and then write on schedule
+            this.flushMetrics(true);
             this.startRemoteWriter();
         }
-
-        if (process.env.DEBUG && process.env.DEBUG === 'true') {
-            this.debugEnabled = true;
-        }
-
-        RemoteWriter.singleton = this;
     }
 
     startRemoteWriter() {
@@ -69,11 +71,11 @@ export class RemoteWriter {
         return _this.remoteWriteConfig.isComplete && !_this.cancelled;
     }
 
-    async flushMetrics() {
+    async flushMetrics(coldStart: boolean = false) {
         RemoteWriter.getSingleton().logDebug("Timer task flushing metrics...");
         const _this = RemoteWriter.singleton;
         if (!_this.cancelled) {
-            await _this.writeMetrics();
+            await _this.writeMetrics(coldStart);
         }
     }
 
@@ -84,8 +86,9 @@ export class RemoteWriter {
     }
 
     // This will have to be invoked once every 15 seconds. We should probably use the NodeJS Timer for this
-    async writeMetrics(): Promise<void> {
+    async writeMetrics(coldStart: boolean = false): Promise<void> {
         if (this.isRemoteWritingOn()) {
+            this.lambdaInstance.coldStart.set(coldStart ? 1 : 0);
             let text = await this.lambdaInstance.getAllMetricsAsText();
             if (text != null) {
                 const options = {

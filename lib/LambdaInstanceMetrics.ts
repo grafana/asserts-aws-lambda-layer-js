@@ -1,5 +1,5 @@
 'use strict';
-import {collectDefaultMetrics, Counter, Histogram, register as globalRegister} from 'prom-client';
+import {collectDefaultMetrics, Counter, Gauge, Histogram, register as globalRegister} from 'prom-client';
 import {hostname} from 'os';
 
 collectDefaultMetrics({
@@ -13,6 +13,7 @@ export class LambdaInstanceMetrics {
         'function_name', 'instance', 'job', 'namespace', 'region',
         'tenant', 'version'];
     invocations: Counter<string>;
+    coldStart: Gauge<string>;
     errors: Counter<string>;
     latency: Histogram<string>;
     debugEnabled: boolean = false;
@@ -34,6 +35,15 @@ export class LambdaInstanceMetrics {
     private static singleton: LambdaInstanceMetrics = new LambdaInstanceMetrics();
 
     constructor() {
+        this.coldStart = new Gauge({
+            name: 'aws_lambda_cold_start',
+            help: `AWS Lambda Cold Start`,
+            registers: [globalRegister],
+            labelNames: this.labelNames
+        });
+        this.coldStart.set(1);
+        globalRegister.registerMetric(this.coldStart);
+
         this.invocations = new Counter({
             name: 'aws_lambda_invocations_total',
             help: `AWS Lambda Invocations Count`,
