@@ -41,7 +41,6 @@ export class LambdaInstanceMetrics {
             registers: [globalRegister],
             labelNames: this.labelNames
         });
-        this.coldStart.set(1);
         globalRegister.registerMetric(this.coldStart);
 
         this.invocations = new Counter({

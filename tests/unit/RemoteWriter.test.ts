@@ -1,11 +1,15 @@
+import {Counter, Gauge} from "prom-client";
+import {mocked} from "jest-mock";
 import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
 import {RemoteWriter} from "../../lib/RemoteWriter";
 import {TaskTimer} from 'tasktimer';
 import * as https from "https";
 import * as http from "http";
 
+jest.mock('prom-client');
 jest.mock('https', () => require('../__mocks__/https'));
 jest.mock('http', () => require('../__mocks__/http'));
+const mockedGauge = mocked(Gauge, true);
 
 describe("Handler Wrapper works for async and sync", () => {
     const mockIsSet: jest.Mock = jest.fn();
@@ -87,6 +91,7 @@ describe("Handler Wrapper works for async and sync", () => {
         process.env["ASSERTS_METRICSTORE_HOST"] = "url";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
         process.env["ASSERTS_PASSWORD"] = "tenantPassword";
+        process.env["DEBUG"] = "true";
 
         // Mock flushMetrics to avoid real call;
         const mockedFlushMetrics = jest.fn();
@@ -116,6 +121,43 @@ describe("Handler Wrapper works for async and sync", () => {
         expect(mockedOn).toHaveBeenCalledWith('tick', realFlushMetrics);
         await remoteWriter.flushMetrics();
         expect(mockedWriteMetrics).toHaveBeenCalled();
+    });
+
+    it("Test writeMetrics on cold start without password", async () => {
+        process.env["ASSERTS_METRICSTORE_HOST"] = "host";
+        process.env["ASSERTS_TENANT_NAME"] = "tenantName";
+
+        RemoteWriter.prototype.requestErrorHandler = mockedResponseErrorHandler;
+
+        RemoteWriter.prototype.flushMetrics = mockedFlushMetrics;
+        TaskTimer.prototype.on = mockedOn;
+        LambdaInstanceMetrics.prototype.getAllMetricsAsText = mockedGetAllMetrics;
+
+        const metricsText = "metrics";
+        mockedGetAllMetrics.mockReturnValue(metricsText);
+
+        const remoteWriter: RemoteWriter = new RemoteWriter();
+        expect(mockedOn).toHaveBeenCalledWith('tick', mockedFlushMetrics);
+
+        mockedHttpsRequest.mockReturnValue(mockedReq);
+
+        await remoteWriter.writeMetrics(true);
+
+        expect(mockedHttpsRequest).toHaveBeenCalledWith({
+            hostname: 'host',
+            port: 443,
+            path: '/api/v1/import/prometheus',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+                'Content-Length': metricsText.length
+            }
+        }, RemoteWriter.prototype.responseCallback);
+
+        expect(mockedReq.on).toHaveBeenCalledWith('error', mockedResponseErrorHandler);
+        expect(mockedReq.write).toHaveBeenCalledWith(metricsText, expect.any(Function));
+        expect(mockedReq.end).toHaveBeenCalled();
+        expect(mockedGauge.prototype.set).toHaveBeenCalledWith(1);
     });
 
     it("Test writeMetrics without password", async () => {
@@ -152,6 +194,7 @@ describe("Handler Wrapper works for async and sync", () => {
         expect(mockedReq.on).toHaveBeenCalledWith('error', mockedResponseErrorHandler);
         expect(mockedReq.write).toHaveBeenCalledWith(metricsText, expect.any(Function));
         expect(mockedReq.end).toHaveBeenCalled();
+        expect(mockedGauge.prototype.set).toHaveBeenCalledWith(0);
     });
 
     it("Test writeMetrics on default port with password", async () => {

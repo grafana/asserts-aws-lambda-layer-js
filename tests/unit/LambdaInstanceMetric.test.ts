@@ -11,6 +11,7 @@ describe("All Tests", () => {
         process.env["AWS_LAMBDA_FUNCTION_VERSION"] = "1";
         process.env['AWS_REGION'] = "us-west-2";
         process.env['ACCOUNT_ID'] = "123123123";
+        process.env['DEBUG'] = 'true';
         jest.clearAllMocks();
     })
 
