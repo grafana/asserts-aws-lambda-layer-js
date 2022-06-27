@@ -15,6 +15,7 @@ export class RemoteWriter {
     lambdaInstance: LambdaInstanceMetrics;
     taskTimer?: TaskTimer;
     cancelled: boolean = false;
+    coldStart: boolean = true;
     debugEnabled: boolean = false;
     private static singleton: RemoteWriter = new RemoteWriter();
 
@@ -52,7 +53,7 @@ export class RemoteWriter {
             process.env.ASSERTS_LAYER_DISABLED !== 'undefined' &&
             process.env.ASSERTS_LAYER_DISABLED !== 'true') {
             // Flush once immediately and then write on schedule
-            this.flushMetrics(true);
+            this.flushMetrics();
             this.startRemoteWriter();
         }
     }
@@ -71,11 +72,11 @@ export class RemoteWriter {
         return _this.remoteWriteConfig.isComplete && !_this.cancelled;
     }
 
-    async flushMetrics(coldStart: boolean = false) {
+    async flushMetrics() {
         RemoteWriter.getSingleton().logDebug("Timer task flushing metrics...");
         const _this = RemoteWriter.singleton;
         if (!_this.cancelled) {
-            await _this.writeMetrics(coldStart);
+            await _this.writeMetrics();
         }
     }
 
@@ -86,9 +87,10 @@ export class RemoteWriter {
     }
 
     // This will have to be invoked once every 15 seconds. We should probably use the NodeJS Timer for this
-    async writeMetrics(coldStart: boolean = false): Promise<void> {
+    async writeMetrics(): Promise<void> {
         if (this.isRemoteWritingOn()) {
-            this.lambdaInstance.coldStart.set(coldStart ? 1 : 0);
+            this.lambdaInstance.coldStart.set(this.coldStart ? 1 : 0);
+            this.coldStart = this.coldStart ? false : false;
             let text = await this.lambdaInstance.getAllMetricsAsText();
             if (text != null) {
                 const options = {
