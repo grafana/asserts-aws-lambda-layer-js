@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import re
 import boto3
 import yaml
@@ -88,7 +89,7 @@ def update_all_functions():
 
 def update_functions(fns):
     for fn in fns['Functions']:
-        if fn['Runtime'] in ['nodejs14.x', 'nodejs12.x'] and should_update_fn(fn):
+        if fn['Runtime'] in ['nodejs14.x', 'nodejs12.x', 'nodejs16.x'] and should_update_fn(fn):
             if operation == 'add-layer':
                 add_layer(fn)
             elif operation == 'remove-layer':

@@ -1,5 +1,5 @@
 import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
-import {Counter, Histogram, register as globalRegister, Registry} from "prom-client";
+import {Gauge, Counter, Histogram, register as globalRegister, Registry} from "prom-client";
 import {mocked} from "jest-mock";
 
 jest.mock('prom-client');
@@ -11,6 +11,7 @@ describe("All Tests", () => {
         process.env["AWS_LAMBDA_FUNCTION_VERSION"] = "1";
         process.env['AWS_REGION'] = "us-west-2";
         process.env['ACCOUNT_ID'] = "123123123";
+        process.env['DEBUG'] = 'true';
         jest.clearAllMocks();
     })
 
@@ -68,6 +69,19 @@ describe("All Tests", () => {
         lambdaInstance.setTenant("tenant");
         expect(lambdaInstance.labelValues.tenant).toBe("tenant");
         expect(lambdaInstance.labelValues.asserts_tenant).toBe("tenant");
+    });
+
+    it("Cold Start Gauge is initialized", () => {
+        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
+        expect(Gauge).toBeCalledTimes(1);
+        expect(Gauge).toHaveBeenCalledWith({
+            name: 'aws_lambda_cold_start',
+            help: `AWS Lambda Cold Start`,
+            registers: [globalRegister],
+            labelNames: lambdaInstance.labelNames
+        });
+        expect(lambdaInstance.coldStart).toBeInstanceOf(Gauge);
+
     });
 
     it("Counters for invocations and errors are created", () => {
