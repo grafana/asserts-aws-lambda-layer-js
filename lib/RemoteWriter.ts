@@ -90,7 +90,7 @@ export class RemoteWriter {
     async writeMetrics(): Promise<void> {
         if (this.isRemoteWritingOn()) {
             this.lambdaInstance.coldStart.set(this.coldStart ? 1 : 0);
-            this.coldStart = this.coldStart ? false : false;
+            this.coldStart = false;
             let text = await this.lambdaInstance.getAllMetricsAsText();
             if (text != null) {
                 const options = {

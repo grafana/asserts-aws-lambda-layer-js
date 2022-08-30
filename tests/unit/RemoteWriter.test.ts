@@ -1,4 +1,4 @@
-import {Counter, Gauge} from "prom-client";
+import {Gauge} from "prom-client";
 import {mocked} from "jest-mock";
 import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
 import {RemoteWriter} from "../../lib/RemoteWriter";
@@ -123,7 +123,7 @@ describe("Handler Wrapper works for async and sync", () => {
         expect(mockedWriteMetrics).toHaveBeenCalled();
     });
 
-    it("Test writeMetrics on cold start without password", async () => {
+    it("Test cold start metric", async () => {
         process.env["ASSERTS_METRICSTORE_HOST"] = "host";
         process.env["ASSERTS_TENANT_NAME"] = "tenantName";
 
@@ -141,7 +141,7 @@ describe("Handler Wrapper works for async and sync", () => {
 
         mockedHttpsRequest.mockReturnValue(mockedReq);
 
-        await remoteWriter.writeMetrics(true);
+        await remoteWriter.writeMetrics();
 
         expect(mockedHttpsRequest).toHaveBeenCalledWith({
             hostname: 'host',
@@ -158,6 +158,24 @@ describe("Handler Wrapper works for async and sync", () => {
         expect(mockedReq.write).toHaveBeenCalledWith(metricsText, expect.any(Function));
         expect(mockedReq.end).toHaveBeenCalled();
         expect(mockedGauge.prototype.set).toHaveBeenCalledWith(1);
+
+        await remoteWriter.writeMetrics();
+
+        expect(mockedHttpsRequest).toHaveBeenCalledWith({
+            hostname: 'host',
+            port: 443,
+            path: '/api/v1/import/prometheus',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+                'Content-Length': metricsText.length
+            }
+        }, RemoteWriter.prototype.responseCallback);
+
+        expect(mockedReq.on).toHaveBeenCalledWith('error', mockedResponseErrorHandler);
+        expect(mockedReq.write).toHaveBeenCalledWith(metricsText, expect.any(Function));
+        expect(mockedReq.end).toHaveBeenCalled();
+        expect(mockedGauge.prototype.set).toHaveBeenCalledWith(0);
     });
 
     it("Test writeMetrics without password", async () => {
@@ -194,6 +212,9 @@ describe("Handler Wrapper works for async and sync", () => {
         expect(mockedReq.on).toHaveBeenCalledWith('error', mockedResponseErrorHandler);
         expect(mockedReq.write).toHaveBeenCalledWith(metricsText, expect.any(Function));
         expect(mockedReq.end).toHaveBeenCalled();
+        expect(mockedGauge.prototype.set).toHaveBeenCalledWith(1);
+
+        await remoteWriter.writeMetrics();
         expect(mockedGauge.prototype.set).toHaveBeenCalledWith(0);
     });
 
