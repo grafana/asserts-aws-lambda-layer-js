@@ -1,5 +1,5 @@
 'use strict';
-import {collectDefaultMetrics, Counter, Gauge, Histogram, register as globalRegister} from 'prom-client';
+import {collectDefaultMetrics, Gauge, register as globalRegister} from 'prom-client';
 import {hostname} from 'os';
 
 collectDefaultMetrics({
@@ -12,10 +12,10 @@ export class LambdaInstanceMetrics {
         'account_id', 'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
         'function_name', 'instance', 'job', 'namespace', 'region',
         'tenant', 'version'];
-    invocations: Counter<string>;
+    // invocations: Counter<string>;
     coldStart: Gauge<string>;
-    errors: Counter<string>;
-    latency: Histogram<string>;
+    // errors: Counter<string>;
+    // latency: Histogram<string>;
     debugEnabled: boolean = false;
     labelValues: {
         account_id?: string;
@@ -43,29 +43,29 @@ export class LambdaInstanceMetrics {
         });
         globalRegister.registerMetric(this.coldStart);
 
-        this.invocations = new Counter({
-            name: 'aws_lambda_invocations_total',
-            help: `AWS Lambda Invocations Count`,
-            registers: [globalRegister],
-            labelNames: this.labelNames
-        });
-        globalRegister.registerMetric(this.invocations);
+        // this.invocations = new Counter({
+        //     name: 'aws_lambda_invocations_total',
+        //     help: `AWS Lambda Invocations Count`,
+        //     registers: [globalRegister],
+        //     labelNames: this.labelNames
+        // });
+        // globalRegister.registerMetric(this.invocations);
 
-        this.errors = new Counter({
-            name: 'aws_lambda_errors_total',
-            help: `AWS Lambda Errors Count`,
-            registers: [globalRegister],
-            labelNames: this.labelNames
-        });
-        globalRegister.registerMetric(this.errors);
+        // this.errors = new Counter({
+        //     name: 'aws_lambda_errors_total',
+        //     help: `AWS Lambda Errors Count`,
+        //     registers: [globalRegister],
+        //     labelNames: this.labelNames
+        // });
+        // globalRegister.registerMetric(this.errors);
 
-        this.latency = new Histogram({
-            name: 'aws_lambda_duration_seconds',
-            help: `AWS Lambda Duration Histogram`,
-            registers: [globalRegister],
-            labelNames: this.labelNames
-        });
-        globalRegister.registerMetric(this.latency);
+        // this.latency = new Histogram({
+        //     name: 'aws_lambda_duration_seconds',
+        //     help: `AWS Lambda Duration Histogram`,
+        //     registers: [globalRegister],
+        //     labelNames: this.labelNames
+        // });
+        // globalRegister.registerMetric(this.latency);
 
         this.labelValues = {
             region: (process.env['AWS_REGION'] as string),
@@ -107,15 +107,15 @@ export class LambdaInstanceMetrics {
     }
 
     recordLatency(latency: number): void {
-        this.latency.observe(latency);
+        // this.latency.observe(latency);
     }
 
     recordError(): void {
-        this.errors.inc(1);
+        // this.errors.inc(1);
     }
 
     recordInvocation(): void {
-        this.invocations.inc(1);
+        // this.invocations.inc(1);
     }
 
     async getAllMetricsAsText() {
