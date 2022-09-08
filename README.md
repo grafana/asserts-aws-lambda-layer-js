@@ -48,16 +48,7 @@ instrumentation
 
 # Exported Metrics
 
-The following metrics are exported by this layer
-
-|Metric Name|Metric Type|Description|
-|-----------|------|-----|
-|`aws_lambda_invocations_total`| `Counter` | The count of invocations on this Lambda instance |
-|`aws_lambda_errors_total`| `Counter` | The count of invocations on this Lambda instance that resulted in an error |
-|`aws_lambda_duration_seconds`| `Histogram` | A histogram of the duration of the invocations  |
-
-In addition to the above metrics, the default metrics collected by [prom-client](https://github.com/siimon/prom-client)
-are also exported.
+The default metrics collected by [prom-client](https://github.com/siimon/prom-client) are automatically exported.
 
 To build the layer,
 
@@ -67,42 +58,17 @@ export VERSION=1
 ls -al asserts-aws-lambda-layer-js*
 -rw-r--r--  1 radhakrishnanj  staff  13736954 Jan 14 13:18 asserts-aws-lambda-layer-js-1.zip
 ```
-
-To create a layer from the zip, follow these steps -
-
-* Create a s3 bucket as follows
-
-```
-aws cloudformation create-stack \
-    --stack-name asserts-assets-s3-bucket \
-    --template-body file://$PWD/deployment/cfn-asserts-assets-s3bucket.yml
-```
-
-* Upload the layer zip to this bucket
-
-```
-aws s3 cp asserts-aws-lambda-layer-js-1.zip s3://asserts-assets/asserts-aws-lambda-layer-js-1.zip
-```
-
-* Create a Layer using the S3 url
-
-```
-aws cloudformation create-stack \
-    --stack-name asserts-aws-lambda-layer-js-1 \
-    --template-body file://$PWD/deployment/cfn-asserts-lambda-layers.yml
-    --parameters ParameterKey=LayerS3Key,ParameterValue=s3://asserts-assets/asserts-aws-lambda-layer-js-1.zip
-```
-
-* To add the layer to your function `Sample-Function`, copy the `deployment/sample-config.yml` as `config.yml`. Specify
-  the function name and layer ARN and other environment properties and run the `manage_asserts_layer` script
-
+Assert has made this layer publicly available. To add the layer to a function `Sample-Function`, copy the 
+`deployment/sample-config.yml` as `config.yml`. Specify the function name and other environment properties 
+and run the `manage_asserts_layer` script. The layer ARN is already included in the script and will always point to 
+the latest version of the layer.
 
 ```
 # Supported operations are 'add-layer', 'remove-layer', 'update-version', 'update-env-variables', 'disable', 'enable'
 operation: update-env-variables
 
 # Layer arn needs to be specified for 'add' or 'update-version' operations
-layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-js:3
+layer_arn: arn:aws:lambda:us-west-2:689200961921:layer:asserts-aws-lambda-layer-js:2
 
 # ASSERTS_METRICSTORE_HOST is required for 'add-layer' operation
 ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
