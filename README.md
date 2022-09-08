@@ -58,6 +58,9 @@ export VERSION=1
 ls -al asserts-aws-lambda-layer-js*
 -rw-r--r--  1 radhakrishnanj  staff  13736954 Jan 14 13:18 asserts-aws-lambda-layer-js-1.zip
 ```
+
+# Add layer to Lambda function
+
 Assert has made this layer publicly available. To add the layer to a function `Sample-Function`, copy the 
 `deployment/sample-config.yml` as `config.yml`. Specify the function name and other environment properties 
 and run the `manage_asserts_layer` script. The layer ARN is already included in the script and will always point to 
