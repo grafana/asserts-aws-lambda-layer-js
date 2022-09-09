@@ -21,7 +21,7 @@ describe("All Tests", () => {
             .toStrictEqual([
                 'account_id', 'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
                 'function_name', 'instance', 'job', 'namespace', 'region',
-                'tenant', 'version']);
+                'tenant', 'version', 'runtime']);
     });
 
     it("Label values are initialised", () => {
@@ -34,6 +34,7 @@ describe("All Tests", () => {
         expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
+        expect(lambdaInstance.labelValues.runtime).toBe('nodejs');
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_site).toBe('us-west-2');
         expect(lambdaInstance.labelValues.asserts_env).toBe('123123123');
@@ -51,6 +52,7 @@ describe("All Tests", () => {
         expect(lambdaInstance.labelValues.function_name).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
+        expect(lambdaInstance.labelValues.runtime).toBe('nodejs');
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_env).toBe("dev");
         expect(lambdaInstance.labelValues.asserts_site).toBe("us-west-1");
