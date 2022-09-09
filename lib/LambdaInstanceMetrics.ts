@@ -11,7 +11,7 @@ export class LambdaInstanceMetrics {
     labelNames: string[] = [
         'account_id', 'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
         'function_name', 'instance', 'job', 'namespace', 'region',
-        'tenant', 'version'];
+        'tenant', 'version', 'runtime'];
     coldStart: Gauge<string>;
     debugEnabled: boolean = false;
     labelValues: {
@@ -27,6 +27,7 @@ export class LambdaInstanceMetrics {
         tenant?: string;
         asserts_site?: string | undefined;
         asserts_env?: string | undefined;
+        runtime: string
     };
 
     private static singleton: LambdaInstanceMetrics = new LambdaInstanceMetrics();
@@ -44,7 +45,8 @@ export class LambdaInstanceMetrics {
             region: (process.env['AWS_REGION'] as string),
             namespace: "AWS/Lambda",
             instance: hostname() + ":" + process.pid,
-            asserts_source: 'prom-client'
+            asserts_source: 'prom-client',
+            runtime: 'nodejs'
         };
         this.labelValues.function_name = process.env["AWS_LAMBDA_FUNCTION_NAME"];
         this.labelValues.job = process.env["AWS_LAMBDA_FUNCTION_NAME"];
