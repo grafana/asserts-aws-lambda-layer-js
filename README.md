@@ -71,7 +71,7 @@ the latest version of the layer.
 operation: update-env-variables
 
 # Layer arn needs to be specified for 'add' or 'update-version' operations
-layer_arn: arn:aws:lambda:us-west-2:689200961921:layer:asserts-aws-lambda-layer-js:2
+layer_arn: arn:aws:lambda:us-west-2:689200961921:layer:asserts-aws-lambda-layer-js:4
 
 # ASSERTS_METRICSTORE_HOST is required for 'add-layer' operation
 ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
