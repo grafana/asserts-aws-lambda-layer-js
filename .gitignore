@@ -14,3 +14,10 @@ lib/*.js
 tests/unit/*.js
 **/*.zip
 **/*.tgz
+coverage/
+.gitignore
+venv/
+.np
+.npmrc
+build-layer
+/deployment/config.yml

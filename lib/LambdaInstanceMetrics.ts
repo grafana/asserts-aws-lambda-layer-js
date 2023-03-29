@@ -6,6 +6,7 @@ collectDefaultMetrics({
     gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5, 10], // These are the default buckets.
 });
 
+
 export class LambdaInstanceMetrics {
     // asserts_env will be optionally sent if configured so in the environment variable
     labelNames: string[] = [
@@ -79,15 +80,6 @@ export class LambdaInstanceMetrics {
     setTenant(tenant: string): void {
         this.labelValues.asserts_tenant = tenant;
         this.labelValues.tenant = tenant;
-    }
-
-    recordLatency(latency: number): void {
-    }
-
-    recordError(): void {
-    }
-
-    recordInvocation(): void {
     }
 
     async getAllMetricsAsText() {

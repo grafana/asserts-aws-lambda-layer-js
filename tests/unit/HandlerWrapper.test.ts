@@ -1,16 +1,7 @@
-import {Context, SQSEvent, Callback} from 'aws-lambda';
+import {Callback, Context, SQSEvent} from 'aws-lambda';
 import * as AssertsSDK from "../../lib/HandlerWrapper";
-import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
 
 describe("Handler Wrapper works for async and sync", () => {
-    const mockRecordInvocation: jest.Mock = jest.fn();
-    const mockRecordError: jest.Mock = jest.fn();
-    const mockRecordLatency: jest.Mock = jest.fn();
-
-    LambdaInstanceMetrics.prototype.recordInvocation = mockRecordInvocation;
-    LambdaInstanceMetrics.prototype.recordLatency = mockRecordLatency;
-    LambdaInstanceMetrics.prototype.recordError = mockRecordError;
-
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -52,10 +43,6 @@ describe("Handler Wrapper works for async and sync", () => {
 
         const actualResult = await wrapHandler(sqsEvent, context, () => {});
         expect(actualResult).toStrictEqual(expectedResult);
-
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).not.toHaveBeenCalled();
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
     });
 
     it("Successful wrapping and metrics capture for async handler returning with error", async () => {
@@ -70,10 +57,6 @@ describe("Handler Wrapper works for async and sync", () => {
         });
 
         await wrapHandler(sqsEvent, context, () => {});
-
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).toHaveBeenCalledTimes(1);
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
     });
 
     it("Successful wrapping and metrics capture for async handler returning with error", async () => {
@@ -91,10 +74,6 @@ describe("Handler Wrapper works for async and sync", () => {
             await wrapHandler(sqsEvent, context, () => {});
         } catch (e) {
         }
-
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).toHaveBeenCalledTimes(1);
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
     });
 
     it("Successful wrapping and metrics capture for async handler returning a promise", async () => {
@@ -108,10 +87,6 @@ describe("Handler Wrapper works for async and sync", () => {
 
         const actualResult = await wrapHandler(sqsEvent, context, () => {});
         expect(actualResult).toStrictEqual(expectedResult);
-
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).not.toHaveBeenCalled();
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
     });
 
     it("Successful wrapping and metrics capture for async handler returning a promise and error", async () => {
@@ -126,10 +101,6 @@ describe("Handler Wrapper works for async and sync", () => {
         });
 
         await wrapHandler(sqsEvent, context, () => {});
-
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).toHaveBeenCalledTimes(1);
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
     });
 
     it("Successful wrapping and metrics capture for sync handler with a callback that is resolved", async () => {
@@ -150,10 +121,6 @@ describe("Handler Wrapper works for async and sync", () => {
         let wrapHandler = AssertsSDK.wrapHandler(handlerWithResolution);
 
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
-
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).not.toHaveBeenCalled();
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
         // FIXME expectation assertions on the callbackForSyncHandler fail so resorting to this hack
         expect(sideEffect).toStrictEqual(["1"]);
     });
@@ -179,9 +146,6 @@ describe("Handler Wrapper works for async and sync", () => {
 
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).toHaveBeenCalledTimes(1);
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
         // FIXME expectation assertions on the callbackForSyncHandler fail so resorting to this hack
         expect(sideEffect).toStrictEqual(["1"]);
     });
@@ -207,9 +171,6 @@ describe("Handler Wrapper works for async and sync", () => {
 
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).toHaveBeenCalledTimes(1);
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
         // FIXME expectation assertions on the callbackForSyncHandler fail so resorting to this hack
         expect(sideEffect).toStrictEqual(["1"]);
     });
@@ -235,9 +196,6 @@ describe("Handler Wrapper works for async and sync", () => {
 
         await wrapHandler(sqsEvent, context, callbackForSyncHandler);
 
-        expect(mockRecordInvocation).toHaveBeenCalledTimes(1);
-        expect(mockRecordError).not.toHaveBeenCalled();
-        expect(mockRecordLatency).toHaveBeenCalledTimes(1);
         // FIXME expectation assertions on the callbackForSyncHandler fail so resorting to this hack
         expect(sideEffect).toStrictEqual(["1"]);
     });

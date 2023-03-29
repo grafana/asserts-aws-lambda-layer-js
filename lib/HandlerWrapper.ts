@@ -82,22 +82,13 @@ export function wrapHandler<TEvent, TResult>(
     return async (event, context) => {
         // In seconds. You cannot go any more granular than this in AWS Lambda.
         let rv: TResult | undefined;
-        const start = process.hrtime();
-        let error: boolean = false;
         try {
-            lambdaMetrics.recordInvocation();
             rv = await asyncHandler(event, context);
         } catch (e) {
-            error = true;
             if (options.rethrowAfterCapture) {
                 throw e;
             }
         } finally {
-            const stop = process.hrtime(start);
-            lambdaMetrics.recordLatency(stop[0] + stop[1] / 1e9);
-            if (error) {
-                lambdaMetrics.recordError();
-            }
         }
         return rv;
     };
