@@ -1,4 +1,4 @@
-FROM node:13.12.0 as build
+FROM node:14.21.3-buster as build
 ENV PATH /app/node_modules/.bin:$PATH
 RUN  apt-get update -y && \
      apt-get upgrade -y && \

@@ -1,5 +1,9 @@
 'use strict';
-import { wrapHandler } from './lib/HandlerWrapper';
-import './lib/RemoteWriter';
+import {wrapHandler} from './lib/HandlerWrapper';
+import {LambdaInstanceMetrics} from "./lib/LambdaInstanceMetrics";
+import {RemoteWriter} from './lib/RemoteWriter';
 
-export { wrapHandler };
+LambdaInstanceMetrics.getSingleton();
+RemoteWriter.getSingleton();
+
+export {wrapHandler, LambdaInstanceMetrics, RemoteWriter};

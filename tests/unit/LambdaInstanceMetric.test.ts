@@ -1,4 +1,4 @@
-import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
+import {LambdaInstanceMetrics} from "../../awslambda-auto";
 import {Gauge, register as globalRegister, Registry} from "prom-client";
 import {mocked} from "jest-mock";
 
@@ -12,6 +12,8 @@ describe("All Tests", () => {
         process.env['AWS_REGION'] = "us-west-2";
         process.env['ACCOUNT_ID'] = "123123123";
         process.env['DEBUG'] = 'true';
+        process.env['OTEL_DEBUG_LEVEL'] = 'INFO';
+        process.env['OTEL_EXPORTER_OTLP_ENDPOINT'] = "http://localhost:4318";
         jest.clearAllMocks();
     })
 

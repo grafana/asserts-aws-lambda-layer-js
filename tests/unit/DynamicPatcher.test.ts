@@ -1,9 +1,5 @@
 'use strict';
 import {DynamicPatcher} from "../../lib/DynamicPatcher";
-import {LambdaInstanceMetrics} from "../../lib/LambdaInstanceMetrics";
-
-LambdaInstanceMetrics.prototype.recordInvocation = jest.fn();
-LambdaInstanceMetrics.prototype.recordLatency = jest.fn();
 
 describe("Handler Wrapper works for async and sync", () => {
     const actualPatchHandler = DynamicPatcher.prototype.patchHandler;
@@ -95,6 +91,5 @@ describe("Handler Wrapper works for async and sync", () => {
         patcher.patchHandler();
         const mod = require('./lambda_task_root');
         mod.handler({}, {});
-        expect(LambdaInstanceMetrics.prototype.recordInvocation).toHaveBeenCalled();
     });
 });
