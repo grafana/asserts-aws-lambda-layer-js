@@ -4,12 +4,12 @@ import {request as https} from 'https';
 import {request as http} from 'http';
 import {TaskTimer} from "tasktimer";
 import {AwsLambdaInstrumentation} from "@opentelemetry/instrumentation-aws-lambda";
-import {ROOT_CONTEXT, SpanKind, trace, context} from '@opentelemetry/api';
+import {context, ROOT_CONTEXT, SpanKind, trace} from '@opentelemetry/api';
+import {urlToHttpOptions} from "url";
 
 export class RemoteWriter {
   remoteWriteConfig: {
-    hostName?: string | undefined;
-    port?: number | undefined;
+    metricsEndpoint?: string | undefined;
     tenantName?: string | undefined;
     password?: string | undefined;
     isComplete: boolean;
@@ -27,34 +27,27 @@ export class RemoteWriter {
   }
 
   constructor() {
-    if (process.env.DEBUG && process.env.DEBUG === 'true') {
+    if (this.isEqual(process.env.DEBUG, 'true')) {
       this.debugEnabled = true;
     }
 
     this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
     this.remoteWriteConfig = {
-      hostName: process.env["ASSERTS_METRICSTORE_HOST"],
+      metricsEndpoint: process.env["ASSERTS_METRIC_ENDPOINT"],
       tenantName: process.env["ASSERTS_TENANT_NAME"],
       password: process.env["ASSERTS_PASSWORD"],
       isComplete: false
     };
 
-    if (process.env["ASSERTS_METRICSTORE_PORT"] && process.env["ASSERTS_METRICSTORE_PORT"] !== 'undefined') {
-      this.remoteWriteConfig.port = parseInt(process.env["ASSERTS_METRICSTORE_PORT"]);
-    } else {
-      this.remoteWriteConfig.port = 443;
-    }
-
-    if (this.remoteWriteConfig.tenantName && this.remoteWriteConfig.tenantName !== 'undefined') {
+    if (this.isDefined(this.remoteWriteConfig.tenantName)) {
       this.lambdaInstance.setTenant((this.remoteWriteConfig.tenantName as (string)));
     }
 
-    this.remoteWriteConfig.isComplete = this.remoteWriteConfig.hostName !== 'undefined';
+
+    this.remoteWriteConfig.isComplete = this.isDefined(this.remoteWriteConfig.metricsEndpoint);
 
     RemoteWriter.singleton = this;
-    if (this.remoteWriteConfig.isComplete && !process.env.ASSERTS_LAYER_DISABLED &&
-      process.env.ASSERTS_LAYER_DISABLED !== 'undefined' &&
-      process.env.ASSERTS_LAYER_DISABLED !== 'true') {
+    if (this.remoteWriteConfig.isComplete && !this.isEqual(process.env.ASSERTS_LAYER_DISABLED, 'true')) {
       // Flush once immediately and then write on schedule
       this.flushMetrics();
       this.startRemoteWriter();
@@ -96,18 +89,18 @@ export class RemoteWriter {
       this.coldStart = false;
       let text = await this.lambdaInstance.getAllMetricsAsText();
       if (text != null) {
-        const options = {
-          hostname: this.remoteWriteConfig.hostName,
-          port: this.remoteWriteConfig.port,
-          path: '/api/v1/import/prometheus',
+        const url = new URL(this.remoteWriteConfig.metricsEndpoint as string);
+        let options = urlToHttpOptions(url);
+        const additionalOptions = {
           method: 'POST',
           headers: {
             'Content-Type': 'text/plain',
             'Content-Length': text.length
           }
-        };
+        }
+        options = Object.assign(options, additionalOptions)
         this.setAuthHeaders(options);
-        const req = options.port === 443 ? https(options, this.responseCallback) :
+        const req = options.protocol === 'https:' ? https(options, this.responseCallback) :
           http(options, this.responseCallback);
         req.on('error', this.requestErrorHandler);
 
@@ -142,7 +135,7 @@ export class RemoteWriter {
   }
 
   setAuthHeaders(options: any) {
-    if (this.remoteWriteConfig.password && this.remoteWriteConfig.password !== 'undefined') {
+    if (this.isDefined(this.remoteWriteConfig.tenantName) && this.isDefined(this.remoteWriteConfig.password)) {
       options.headers.Authorization = 'Basic ' + Buffer
         .from(this.remoteWriteConfig.tenantName + ':' + this.remoteWriteConfig.password)
         .toString('base64');
@@ -170,6 +163,14 @@ export class RemoteWriter {
 
   requestErrorHandler(error: any) {
     console.error('POST to Asserts Metric API resulted in an error: ' + error.toString());
+  }
+
+  isDefined(value: string | undefined): boolean {
+    return !(value === undefined || value === 'undefined');
+  }
+
+  isEqual(value: string | undefined, expected: string) {
+    return this.isDefined(value) && value === expected
   }
 }
 
