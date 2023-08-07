@@ -79,7 +79,9 @@ const logLevel = getEnv().OTEL_LOG_LEVEL ? getEnv().OTEL_LOG_LEVEL : DiagLogLeve
 
 function tracingEnabled() {
   let traceFlag = process.env["ENABLE_TRACING"];
-  return traceFlag == "true" || process.env["ENABLE_TRACING"] == "y" || process.env["ENABLE_TRACING"] == "Y";
+  return traceFlag && (
+    traceFlag == "true" || process.env["ENABLE_TRACING"] == "y" || process.env["ENABLE_TRACING"] == "Y"
+  );
 }
 
 // configure lambda logging

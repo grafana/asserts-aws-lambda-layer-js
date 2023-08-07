@@ -1,6 +1,6 @@
 {
   "name": "asserts-aws-lambda-layer",
-  "version": "latest",
+  "version": "493e875",
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
   "main": "index.js",
   "files": [
@@ -18,7 +18,7 @@
     "@opentelemetry/sdk-trace-base": "^1.10.1",
     "@opentelemetry/sdk-trace-node": "^1.10.1",
     "@opentelemetry/semantic-conventions": "^1.10.1",
-    "prom-client": "14.0.1",
+    "prom-client": "15.0.0-1",
     "tasktimer": "3.0.0"
   },
   "devDependencies": {
