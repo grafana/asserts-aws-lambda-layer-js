@@ -13,6 +13,12 @@ ASSERTS_PASSWORD: wrong
 ASSERTS_ENVIRONMENT: dev
 ASSERTS_SITE: dev
 
+# OTEL Properties
+ENABEL_TRACING=y
+OTEL_LOG_LEVEL=DEBUG
+OTEL_TRACES_SAMPLER=always_on
+OTEL_EXPORTER_OTLP_ENDPOINT=Asserts-OTEL-Collector-Latest-1993150161.us-west-2.elb.amazonaws.com:4318
+
 # Functions can be specified either through a regex pattern or through a list of function names
 # function_name_pattern: Sample.+
 function_names:

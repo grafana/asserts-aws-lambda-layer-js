@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import re
+
 import boto3
 import yaml
 
@@ -51,6 +52,13 @@ SITE = 'ASSERTS_SITE'
 ON_OFF_FLAG = 'ASSERTS_LAYER_DISABLED'
 NODE_OPTIONS = 'NODE_OPTIONS'
 
+# OTEL variables
+ENABLE_TRACING = 'ENABLE_TRACING'
+OTEL_EXPORTER_ENDPOINT = 'OTEL_EXPORTER_OTLP_ENDPOINT'
+OTEL_LOG_LEVEL = 'OTEL_LOG_LEVEL'
+OTEL_RESOURCE_ATTRIBUTES = 'OTEL_RESOURCE_ATTRIBUTES'
+OTEL_TRACES_SAMPLER = 'OTEL_TRACES_SAMPLER'
+
 variable_names = [
     ACCOUNT_ID,
     ENV,
@@ -58,10 +66,14 @@ variable_names = [
     TENANT_NAME,
     PASSWORD,
     ON_OFF_FLAG,
-    NODE_OPTIONS
+    NODE_OPTIONS,
+    ENABLE_TRACING,
+    OTEL_EXPORTER_ENDPOINT,
+    OTEL_LOG_LEVEL,
+    OTEL_TRACES_SAMPLER
 ]
 
-variables = {
+new_variables = {
     NODE_OPTIONS: '-r asserts-aws-lambda-layer/awslambda-auto'
 }
 
@@ -69,19 +81,12 @@ if operation in 'add-layer' and config.get(ENDPOINT) is None:
     print("Config file 'config.yml' is invalid. '" + ENDPOINT + "' is not specified")
     raise ()
 
-if config.get(ENDPOINT) is not None:
-    variables[ENDPOINT] = config[ENDPOINT]
-if config.get(TENANT_NAME) is not None:
-    variables[TENANT_NAME] = config[TENANT_NAME]
-if config.get(PASSWORD) is not None:
-    variables[PASSWORD] = config[PASSWORD]
-if config.get(ENV) is not None:
-    variables[ENV] = config[ENV]
-if config.get(SITE) is not None:
-    variables[SITE] = config[SITE]
+for var in variable_names:
+    if config.get(var) is not None:
+        new_variables[var] = config[var]
 
 caller_identity = sts_client.get_caller_identity()
-variables[ACCOUNT_ID] = caller_identity.get('Account')
+new_variables[ACCOUNT_ID] = caller_identity.get('Account')
 
 
 def update_all_functions():
@@ -151,7 +156,7 @@ def add_layer(fn):
     layers = get_layer_arns(fn)
     layers.append(layer_arn)
 
-    _env = {'Variables': variables}
+    _env = {'Variables': new_variables}
     if fn.get('Environment') is not None:
         merge_variables(_env, fn)
 
@@ -160,7 +165,7 @@ def add_layer(fn):
 
 
 def update_config(fn):
-    _env = {'Variables': variables}
+    _env = {'Variables': new_variables}
     if get_asserts_layer(fn) is not None:
         if fn.get('Environment') is not None:
             merge_variables(_env, fn)
@@ -202,20 +207,31 @@ def update_fn(fn, _env, layers):
 
 
 def merge_variables(_env, fn):
-    provided_vars = list(variables.keys())
+    # Add OTEL_RESOURCE_ATTRIBUTES which is function specific
+    resource_attributes_template = "service.namespace=AWS/Lambda,service.name={name}, asserts.env={env}, asserts.site={site}"
+    resource_attributes = resource_attributes_template.format(name=fn['FunctionName'], env=new_variables[ENV],
+                                                              site=new_variables[SITE])
+    new_variables[OTEL_RESOURCE_ATTRIBUTES] = resource_attributes
+
+    current_variables = fn['Environment']['Variables']
+
+    # Log diff
+    provided_vars = list(new_variables.keys())
     provided_vars.sort()
-    _variables = fn['Environment']['Variables']
-    current_vars = list(_variables.keys())
+
+    current_vars = list(current_variables.keys())
     current_vars.sort()
-    _variables.update(variables)
     print('Current  : ' + ', '.join(current_vars))
     print('Provided : ' + ', '.join(provided_vars))
-    for var in [ENV, SITE]:
-        if var in current_vars and var not in provided_vars:
-            _variables.pop(var)
-    updated_vars = list(_variables.keys())
+
+    # Update
+    current_variables.update(new_variables)
+
+    updated_vars = list(current_variables.keys())
     updated_vars.sort()
     print('Final    : ' + ', '.join(updated_vars))
+
+    new_variables.pop(OTEL_RESOURCE_ATTRIBUTES)
 
 
 def get_asserts_layer(fn):
