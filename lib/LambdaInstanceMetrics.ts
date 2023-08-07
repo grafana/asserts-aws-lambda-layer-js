@@ -56,7 +56,7 @@ export class LambdaInstanceMetrics {
       instance: hostname() + ":" + process.pid,
       asserts_source: 'prom-client',
       runtime: 'nodejs',
-      layer_version: '__layer_version__'
+      layer_version: '493e875527eb2b9bc7dd4a0446424083d40caa2e'
     };
     this.labelValues.function_name = process.env["AWS_LAMBDA_FUNCTION_NAME"];
     this.labelValues.job = process.env["AWS_LAMBDA_FUNCTION_NAME"];

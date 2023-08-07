@@ -70,7 +70,7 @@ the latest version of the layer.
 operation: update-env-variables
 
 # Layer arn needs to be specified for 'add' or 'update-version' operations
-layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-js:53
+layer_arn: arn:aws:lambda:us-west-2:342994379019:layer:asserts-aws-lambda-layer-js:54
 
 # ASSERTS_METRIC_ENDPOINT is required for 'add-layer' operation
 ASSERTS_METRIC_ENDPOINT: https://chief.tsdb.dev.asserts.ai/api/v1/import/prometheus

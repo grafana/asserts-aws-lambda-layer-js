@@ -1,6 +1,6 @@
 {
   "name": "asserts-aws-lambda-layer",
-  "version": "latest",
+  "version": "493e875",
   "description": "Asserts AWS Lambda Layer for NodeJS to push prometheus metrics",
   "main": "index.js",
   "files": [

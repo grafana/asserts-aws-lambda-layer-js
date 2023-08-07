@@ -36,7 +36,7 @@ describe("All Tests", () => {
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.labelValues.runtime).toBe('nodejs');
-        expect(lambdaInstance.labelValues.layer_version).toBe('__layer_version__');
+        expect(lambdaInstance.labelValues.layer_version).toBe('493e875527eb2b9bc7dd4a0446424083d40caa2e');
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_site).toBe('us-west-2');
         expect(lambdaInstance.labelValues.asserts_env).toBe('123123123');
@@ -55,7 +55,7 @@ describe("All Tests", () => {
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.labelValues.runtime).toBe('nodejs');
-        expect(lambdaInstance.labelValues.layer_version).toBe('__layer_version__');
+        expect(lambdaInstance.labelValues.layer_version).toBe('493e875527eb2b9bc7dd4a0446424083d40caa2e');
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_env).toBe("dev");
         expect(lambdaInstance.labelValues.asserts_site).toBe("us-west-1");
