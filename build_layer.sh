@@ -11,6 +11,7 @@ aws s3 cp "asserts-aws-lambda-layer-js-$COMMIT_HASH.zip" s3://asserts-lambda-lay
 
 LAYER_VERSION=$(aws lambda publish-layer-version --no-paginate --no-cli-pager --output json --layer-name asserts-aws-lambda-layer-js \
   --description "Asserts AWS Lambda Layer for NodeJS created from asserts-aws-lambda-layer-js-$COMMIT_HASH" \
+  --compatible-runtimes "nodejs18.x" "nodejs16.x" "nodejs14.x" "nodejs12.x" \
   --content "S3Bucket=asserts-lambda-layers,S3Key=asserts-aws-lambda-layer-js-$COMMIT_HASH.zip" | jq '.Version')
 export LAYER_VERSION
 

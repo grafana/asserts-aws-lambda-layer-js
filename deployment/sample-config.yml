@@ -17,7 +17,7 @@ ASSERTS_SITE: dev
 ENABEL_TRACING: y
 OTEL_LOG_LEVEL: WARN
 OTEL_TRACES_SAMPLER: always_on
-OTEL_EXPORTER_OTLP_ENDPOINT: Asserts-OTEL-Collector-Latest-1213150131.us-west-2.elb.amazonaws.com:4318
+OTEL_EXPORTER_OTLP_ENDPOINT: https://Asserts-OTEL-Collector-Latest-1213150131.us-west-2.elb.amazonaws.com:4318
 
 # Functions can be specified either through a regex pattern or through a list of function names
 # function_name_pattern: Sample.+
