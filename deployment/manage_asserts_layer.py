@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import re
-
 import boto3
 import yaml
+import logging
 
 # Get the Lambda Client
 lambda_client = boto3.client('lambda')
@@ -13,7 +13,7 @@ sts_client = boto3.client('sts')
 file = open('config.yml', 'r')
 config = yaml.safe_load(file)
 if config is None:
-    print("Config file 'config.yml' is empty or parsing failed")
+    logging.info("Config file 'config.yml' is empty or parsing failed")
     raise ()
 fn_name_pattern = config.get('function_name_pattern')
 specified_fn_names = config.get('function_names')
@@ -21,18 +21,18 @@ operation = config.get('operation')
 layer_arn = config.get('layer_arn')
 
 if operation is None:
-    print("Config file 'config.yml' is invalid. 'operation' is not specified")
+    logging.info("Config file 'config.yml' is invalid. 'operation' is not specified")
     raise ()
 elif operation not in ['add-layer', 'disable-layer', 'enable-layer', 'remove-layer', 'update-env-variables',
                        'update-version']:
-    print(
+    logging.info(
         "Config file 'config.yml' is invalid. Invalid value '" + operation +
         "' for 'operation'. Valid values are ['add-layer', 'disable-layer', 'enable-layer', 'remove-layer', "
         "'update-env-variables', 'update-version']")
     raise ()
 
 if specified_fn_names is None and fn_name_pattern is None:
-    print(
+    logging.info(
         "Config file 'config.yml' is invalid. Either 'function_name_pattern' or 'function_names' should "
         "be specified")
     raise ()
@@ -40,7 +40,7 @@ elif fn_name_pattern is not None:
     specified_fn_name_pattern = re.compile(fn_name_pattern)
 
 if operation == 'add-layer' and layer_arn is None:
-    print("Config file 'config.yml' is invalid. 'layer_arn' needs to be specified for `add` operation")
+    logging.info("Config file 'config.yml' is invalid. 'layer_arn' needs to be specified for `add` operation")
     raise ()
 
 ACCOUNT_ID = 'ACCOUNT_ID'
@@ -49,8 +49,9 @@ TENANT_NAME = 'ASSERTS_TENANT_NAME'
 PASSWORD = 'ASSERTS_PASSWORD'
 ENV = 'ASSERTS_ENVIRONMENT'
 SITE = 'ASSERTS_SITE'
-ON_OFF_FLAG = 'ASSERTS_LAYER_DISABLED'
+DISABLE_PROM_CLIENT = 'ASSERTS_LAYER_DISABLED'
 NODE_OPTIONS = 'NODE_OPTIONS'
+DEBUG = 'DEBUG'
 
 # OTEL variables
 ENABLE_TRACING = 'ENABLE_TRACING'
@@ -65,12 +66,14 @@ variable_names = [
     SITE,
     TENANT_NAME,
     PASSWORD,
-    ON_OFF_FLAG,
+    DISABLE_PROM_CLIENT,
+    DEBUG,
     NODE_OPTIONS,
     ENABLE_TRACING,
     OTEL_EXPORTER_ENDPOINT,
     OTEL_LOG_LEVEL,
-    OTEL_TRACES_SAMPLER
+    OTEL_TRACES_SAMPLER,
+    OTEL_RESOURCE_ATTRIBUTES
 ]
 
 new_variables = {
@@ -78,7 +81,7 @@ new_variables = {
 }
 
 if operation in 'add-layer' and config.get(ENDPOINT) is None:
-    print("Config file 'config.yml' is invalid. '" + ENDPOINT + "' is not specified")
+    logging.info("Config file 'config.yml' is invalid. '" + ENDPOINT + "' is not specified")
     raise ()
 
 for var in variable_names:
@@ -104,7 +107,7 @@ def update_all_functions():
 
 def update_functions(fns):
     for fn in fns['Functions']:
-        if fn['Runtime'] in ['nodejs14.x', 'nodejs12.x', 'nodejs16.x'] and should_update_fn(fn):
+        if fn['Runtime'] in ['nodejs14.x', 'nodejs12.x', 'nodejs16.x', 'nodejs18.x'] and should_update_fn(fn):
             if operation == 'add-layer':
                 add_layer(fn)
             elif operation == 'remove-layer':
@@ -133,21 +136,24 @@ def remove_layer(fn):
         layers.remove(asserts_layer)
         current_variables = fn['Environment']['Variables']
         for key in variable_names:
-            current_variables.pop(key)
+            if current_variables.get(key) is not None:
+                current_variables.pop(key)
         update_fn(fn, {'Variables': current_variables}, layers)
 
 
 def disable_layer(fn):
     if get_asserts_layer(fn) is not None:
         current_variables = fn['Environment']['Variables']
-        current_variables[ON_OFF_FLAG] = 'true'
+        current_variables[DISABLE_PROM_CLIENT] = 'true'
+        current_variables[ENABLE_TRACING] = 'n'
         update_fn(fn, {'Variables': current_variables}, None)
 
 
 def enable_layer(fn):
     if get_asserts_layer(fn) is not None:
         current_variables = fn['Environment']['Variables']
-        current_variables[ON_OFF_FLAG] = 'false'
+        current_variables[DISABLE_PROM_CLIENT] = 'false'
+        current_variables[ENABLE_TRACING] = 'y'
         update_fn(fn, {'Variables': current_variables}, None)
     return
 
@@ -157,22 +163,23 @@ def add_layer(fn):
     layers.append(layer_arn)
 
     _env = {'Variables': new_variables}
+    add_resource_attributes(fn, new_variables)
     if fn.get('Environment') is not None:
         merge_variables(_env, fn)
-
     update_fn(fn, _env, layers)
     return
 
 
 def update_config(fn):
     _env = {'Variables': new_variables}
+    add_resource_attributes(fn, new_variables)
     if get_asserts_layer(fn) is not None:
         if fn.get('Environment') is not None:
             merge_variables(_env, fn)
         update_fn(fn, _env, None)
         return
     else:
-        print(fn['FunctionArn'] + ": does not have asserts lambda layer added")
+        logging.info(fn['FunctionArn'] + ": does not have asserts lambda layer added")
 
 
 def update_layer_version(fn):
@@ -207,12 +214,6 @@ def update_fn(fn, _env, layers):
 
 
 def merge_variables(_env, fn):
-    # Add OTEL_RESOURCE_ATTRIBUTES which is function specific
-    resource_attributes_template = "service.namespace=AWS/Lambda,service.name={name}, asserts.env={env}, asserts.site={site}"
-    resource_attributes = resource_attributes_template.format(name=fn['FunctionName'], env=new_variables[ENV],
-                                                              site=new_variables[SITE])
-    new_variables[OTEL_RESOURCE_ATTRIBUTES] = resource_attributes
-
     current_variables = fn['Environment']['Variables']
 
     # Log diff
@@ -221,17 +222,24 @@ def merge_variables(_env, fn):
 
     current_vars = list(current_variables.keys())
     current_vars.sort()
-    print('Current  : ' + ', '.join(current_vars))
-    print('Provided : ' + ', '.join(provided_vars))
+    logging.info('Current  : ' + ', '.join(current_vars))
+    logging.info('Provided : ' + ', '.join(provided_vars))
 
     # Update
     current_variables.update(new_variables)
 
     updated_vars = list(current_variables.keys())
     updated_vars.sort()
-    print('Final    : ' + ', '.join(updated_vars))
+    logging.info('Final    : ' + ', '.join(updated_vars))
 
-    new_variables.pop(OTEL_RESOURCE_ATTRIBUTES)
+
+def add_resource_attributes(fn, new_variables):
+    # Add OTEL_RESOURCE_ATTRIBUTES which is function specific
+    resource_attributes_template = "service.namespace=AWS/Lambda,service.name={name}, asserts.env={env}, asserts.site={site}"
+    resource_attributes = resource_attributes_template.format(name=fn['FunctionName'], env=new_variables[ENV],
+                                                              site=new_variables[SITE])
+    new_variables[OTEL_RESOURCE_ATTRIBUTES] = resource_attributes
+    logging.info(OTEL_RESOURCE_ATTRIBUTES + ':' + resource_attributes)
 
 
 def get_asserts_layer(fn):
