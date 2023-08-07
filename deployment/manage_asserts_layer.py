@@ -42,36 +42,46 @@ if operation == 'add-layer' and layer_arn is None:
     print("Config file 'config.yml' is invalid. 'layer_arn' needs to be specified for `add` operation")
     raise ()
 
-variables = {
-    'NODE_OPTIONS': '-r asserts-aws-lambda-layer/awslambda-auto'
-}
-account_id = 'ACCOUNT_ID'
-host = 'ASSERTS_METRICSTORE_HOST'
-port = 'ASSERTS_METRICSTORE_PORT'
-tenant_name = 'ASSERTS_TENANT_NAME'
-password = 'ASSERTS_PASSWORD'
-env = 'ASSERTS_ENVIRONMENT'
-site = 'ASSERTS_SITE'
+ACCOUNT_ID = 'ACCOUNT_ID'
+ENDPOINT = 'ASSERTS_METRIC_ENDPOINT'
+TENANT_NAME = 'ASSERTS_TENANT_NAME'
+PASSWORD = 'ASSERTS_PASSWORD'
+ENV = 'ASSERTS_ENVIRONMENT'
+SITE = 'ASSERTS_SITE'
+ON_OFF_FLAG = 'ASSERTS_LAYER_DISABLED'
+NODE_OPTIONS = 'NODE_OPTIONS'
 
-if operation in 'add-layer' and config.get(host) is None:
-    print("Config file 'config.yml' is invalid. '" + host + "' is not specified")
+variable_names = [
+    ACCOUNT_ID,
+    ENV,
+    SITE,
+    TENANT_NAME,
+    PASSWORD,
+    ON_OFF_FLAG,
+    NODE_OPTIONS
+]
+
+variables = {
+    NODE_OPTIONS: '-r asserts-aws-lambda-layer/awslambda-auto'
+}
+
+if operation in 'add-layer' and config.get(ENDPOINT) is None:
+    print("Config file 'config.yml' is invalid. '" + ENDPOINT + "' is not specified")
     raise ()
 
-if config.get(host) is not None:
-    variables['ASSERTS_METRICSTORE_HOST'] = config[host]
-if config.get(port) is not None:
-    variables['ASSERTS_METRICSTORE_PORT'] = config[port]
-if config.get(tenant_name) is not None:
-    variables['ASSERTS_TENANT_NAME'] = config[tenant_name]
-if config.get(password) is not None:
-    variables['ASSERTS_PASSWORD'] = config[password]
-if config.get(env) is not None:
-    variables['ASSERTS_ENVIRONMENT'] = config[env]
-if config.get(site) is not None:
-    variables['ASSERTS_SITE'] = config[site]
+if config.get(ENDPOINT) is not None:
+    variables[ENDPOINT] = config[ENDPOINT]
+if config.get(TENANT_NAME) is not None:
+    variables[TENANT_NAME] = config[TENANT_NAME]
+if config.get(PASSWORD) is not None:
+    variables[PASSWORD] = config[PASSWORD]
+if config.get(ENV) is not None:
+    variables[ENV] = config[ENV]
+if config.get(SITE) is not None:
+    variables[SITE] = config[SITE]
 
 caller_identity = sts_client.get_caller_identity()
-variables['ACCOUNT_ID'] = caller_identity.get('Account')
+variables[ACCOUNT_ID] = caller_identity.get('Account')
 
 
 def update_all_functions():
@@ -117,24 +127,22 @@ def remove_layer(fn):
     if asserts_layer is not None:
         layers.remove(asserts_layer)
         current_variables = fn['Environment']['Variables']
-        asserts_properties = list(filter(lambda _key: 'ASSERTS_' in _key, current_variables.keys()))
-        for key in asserts_properties:
+        for key in variable_names:
             current_variables.pop(key)
-        current_variables.pop('NODE_OPTIONS')
         update_fn(fn, {'Variables': current_variables}, layers)
 
 
 def disable_layer(fn):
     if get_asserts_layer(fn) is not None:
         current_variables = fn['Environment']['Variables']
-        current_variables['ASSERTS_LAYER_DISABLED'] = 'true'
+        current_variables[ON_OFF_FLAG] = 'true'
         update_fn(fn, {'Variables': current_variables}, None)
 
 
 def enable_layer(fn):
     if get_asserts_layer(fn) is not None:
         current_variables = fn['Environment']['Variables']
-        current_variables['ASSERTS_LAYER_DISABLED'] = 'false'
+        current_variables[ON_OFF_FLAG] = 'false'
         update_fn(fn, {'Variables': current_variables}, None)
     return
 
@@ -202,7 +210,7 @@ def merge_variables(_env, fn):
     _variables.update(variables)
     print('Current  : ' + ', '.join(current_vars))
     print('Provided : ' + ', '.join(provided_vars))
-    for var in ['ASSERTS_ENVIRONMENT', 'ASSERTS_SITE']:
+    for var in [ENV, SITE]:
         if var in current_vars and var not in provided_vars:
             _variables.pop(var)
     updated_vars = list(_variables.keys())

@@ -39,8 +39,7 @@ instrumentation
 
 |Variable name| Description|
 |-------------|------------|
-|`ASSERTS_METRICSTORE_HOST`|An endpoint which can receive the `POST` method call on api `/api/v1/import/prometheus`. This can either be an asserts cloud endpoint or an end point exposed on the EC2 or ECS instance where [Asserts AWS Exporter](https://app.gitbook.com/o/-Mih12_HEHZ0gGyaqQ0X/s/-Mih17ZSkwF7P2VxUo4u/quickstart-guide/setting-up-aws-serverless-monitoring) is deployed or [Victor Metrics](https://victoriametrics.com/) ingestion endpoint |
-|`ASSERTS_METRICSTORE_PORT`|By default the metrics will be written to https on port `443`. To use `http`, just specify a different port number. For e.g. `80` |
+|`ASSERTS_METRIC_ENDPOINT`|An endpoint which can receive the `POST` method call on api `/api/v1/import/prometheus`. This can either be an asserts cloud endpoint or an end point exposed on the EC2 or ECS instance where [Asserts AWS Exporter](https://app.gitbook.com/o/-Mih12_HEHZ0gGyaqQ0X/s/-Mih17ZSkwF7P2VxUo4u/quickstart-guide/setting-up-aws-serverless-monitoring) is deployed or [Victor Metrics](https://victoriametrics.com/) ingestion endpoint |
 |`ASSERTS_TENANT_NAME`|The tenant name in the Asserts Cloud where the metrics will be ingested |
 |`ASSERTS_PASSWORD`|If the endpoint supports and expects Basic authorization the credentials can be configured here |
 |`ASSERTS_LAYER_DISABLED`| If set to `true`, the layer will be disabled|
@@ -73,11 +72,8 @@ operation: update-env-variables
 # Layer arn needs to be specified for 'add' or 'update-version' operations
 layer_arn: arn:aws:lambda:us-west-2:689200961921:layer:asserts-aws-lambda-layer-js:4
 
-# ASSERTS_METRICSTORE_HOST is required for 'add-layer' operation
-ASSERTS_METRICSTORE_HOST: chief.tsdb.dev.asserts.ai
-
-# ASSERTS_METRICSTORE_PORT can optionally be specified to change from https to http by specifing a port different than 443
-# ASSERTS_METRICSTORE_PORT=80
+# ASSERTS_METRIC_ENDPOINT is required for 'add-layer' operation
+ASSERTS_METRIC_ENDPOINT: https://chief.tsdb.dev.asserts.ai/api/v1/import/prometheus
 
 # ASSERTS_TENANT and ASSERTS_PASSWORD are optional
 ASSERTS_TENANT_NAME: chief
