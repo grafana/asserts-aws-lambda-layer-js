@@ -3,9 +3,16 @@
 COMMIT_HASH="$(git rev-parse --short HEAD)"
 export COMMIT_HASH
 
+COMMIT_FULL_HASH="$(git rev-parse HEAD)"
+export COMMIT_FULL_HASH
+
 sed -i '' "s/latest/$COMMIT_HASH/g" package.json
+sed -i '' "s/__layer_version__/$COMMIT_FULL_HASH/g" lib/LambdaInstanceMetrics.ts
+sed -i '' "s/__layer_version__/$COMMIT_FULL_HASH/g" tests/unit/LambdaInstanceMetric.test.ts
 npm run clean-all && npm install && tsc && npm test && npm pack && npm run build-layer
 sed -i '' "s/$COMMIT_HASH/latest/g" package.json
+sed -i '' "s/$COMMIT_FULL_HASH/__layer_version__/g" lib/LambdaInstanceMetrics.ts
+sed -i '' "s/$COMMIT_FULL_HASH/__layer_version__/g" tests/unit/LambdaInstanceMetric.test.ts
 
 aws s3 cp "asserts-aws-lambda-layer-js-$COMMIT_HASH.zip" s3://asserts-lambda-layers
 

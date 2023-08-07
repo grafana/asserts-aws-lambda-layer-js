@@ -21,9 +21,8 @@ describe("All Tests", () => {
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
         expect(lambdaInstance.labelNames)
             .toStrictEqual([
-                'account_id', 'asserts_env', 'asserts_site', 'asserts_source', 'asserts_tenant',
-                'function_name', 'instance', 'job', 'namespace', 'region',
-                'tenant', 'version', 'runtime']);
+                'account_id', 'asserts_env', 'asserts_site', 'asserts_source',
+                'function_name', 'instance', 'job', 'namespace', 'region', 'version', 'runtime', 'layer_version']);
     });
 
     it("Label values are initialised", () => {
@@ -37,6 +36,7 @@ describe("All Tests", () => {
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.labelValues.runtime).toBe('nodejs');
+        expect(lambdaInstance.labelValues.layer_version).toBe('__layer_version__');
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_site).toBe('us-west-2');
         expect(lambdaInstance.labelValues.asserts_env).toBe('123123123');
@@ -55,6 +55,7 @@ describe("All Tests", () => {
         expect(lambdaInstance.labelValues.job).toBe("OrderProcessor")
         expect(lambdaInstance.labelValues.version).toBe("1");
         expect(lambdaInstance.labelValues.runtime).toBe('nodejs');
+        expect(lambdaInstance.labelValues.layer_version).toBe('__layer_version__');
         expect(lambdaInstance.isNameAndVersionSet()).toBe(true);
         expect(lambdaInstance.labelValues.asserts_env).toBe("dev");
         expect(lambdaInstance.labelValues.asserts_site).toBe("us-west-1");
@@ -68,24 +69,23 @@ describe("All Tests", () => {
         expect(lambdaInstance.isNameAndVersionSet()).toBe(false);
     });
 
-    it("Tenant labels are initialised", () => {
-        const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
-        lambdaInstance.setTenant("tenant");
-        expect(lambdaInstance.labelValues.tenant).toBe("tenant");
-        expect(lambdaInstance.labelValues.asserts_tenant).toBe("tenant");
-    });
-
     it("Cold Start Gauge is initialized", () => {
         const lambdaInstance: LambdaInstanceMetrics = new LambdaInstanceMetrics();
-        expect(Gauge).toBeCalledTimes(1);
+        expect(Gauge).toBeCalledTimes(2);
         expect(Gauge).toHaveBeenCalledWith({
             name: 'aws_lambda_cold_start',
             help: `AWS Lambda Cold Start`,
             registers: [globalRegister],
             labelNames: lambdaInstance.labelNames
         });
-        expect(lambdaInstance.coldStart).toBeInstanceOf(Gauge);
 
+        expect(Gauge).toHaveBeenCalledWith({
+            name: 'aws_lambda_nodejs_layer_info',
+            help: `AWS Lambda Layer Build Info`,
+            registers: [globalRegister],
+            labelNames: lambdaInstance.labelNames
+        });
+        expect(lambdaInstance.layerBuildInfo).toBeInstanceOf(Gauge);
     });
 
 

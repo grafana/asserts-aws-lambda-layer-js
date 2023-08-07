@@ -44,7 +44,7 @@ if operation == 'add-layer' and layer_arn is None:
     raise ()
 
 ACCOUNT_ID = 'ACCOUNT_ID'
-ENDPOINT = 'ASSERTS_METRIC_ENDPOINT'
+METRIC_ENDPOINT = 'ASSERTS_METRIC_ENDPOINT'
 TENANT_NAME = 'ASSERTS_TENANT_NAME'
 PASSWORD = 'ASSERTS_PASSWORD'
 ENV = 'ASSERTS_ENVIRONMENT'
@@ -64,6 +64,7 @@ variable_names = [
     ACCOUNT_ID,
     ENV,
     SITE,
+    METRIC_ENDPOINT,
     TENANT_NAME,
     PASSWORD,
     DISABLE_PROM_CLIENT,
@@ -80,8 +81,8 @@ new_variables = {
     NODE_OPTIONS: '-r asserts-aws-lambda-layer/awslambda-auto'
 }
 
-if operation in 'add-layer' and config.get(ENDPOINT) is None:
-    logging.info("Config file 'config.yml' is invalid. '" + ENDPOINT + "' is not specified")
+if operation in 'add-layer' and config.get(METRIC_ENDPOINT) is None:
+    logging.info("Config file 'config.yml' is invalid. '" + METRIC_ENDPOINT + "' is not specified")
     raise ()
 
 for var in variable_names:

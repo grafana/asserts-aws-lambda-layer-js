@@ -14,7 +14,6 @@ const mockedGauge = mocked(Gauge, true);
 describe("Handler Wrapper works for async and sync", () => {
     const mockIsSet: jest.Mock = jest.fn();
     const mockGetMetrics: jest.Mock = jest.fn();
-    const mockSetTenant: jest.Mock = jest.fn();
 
     const realFlushMetrics = RemoteWriter.prototype.flushMetrics;
     const realWriteMetrics = RemoteWriter.prototype.writeMetrics;
@@ -36,7 +35,6 @@ describe("Handler Wrapper works for async and sync", () => {
 
     LambdaInstanceMetrics.prototype.isNameAndVersionSet = mockIsSet;
     LambdaInstanceMetrics.prototype.getAllMetricsAsText = mockGetMetrics;
-    LambdaInstanceMetrics.prototype.setTenant = mockSetTenant;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -99,7 +97,6 @@ describe("Handler Wrapper works for async and sync", () => {
 
         const remoteWriter: RemoteWriter = new RemoteWriter();
         expect(remoteWriter.isRemoteWritingOn()).toBe(true);
-        expect(mockSetTenant).toHaveBeenCalledWith("tenantName");
         expect(mockedOn).toHaveBeenCalledWith('tick', mockedFlushMetrics);
     });
 

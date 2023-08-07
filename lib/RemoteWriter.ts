@@ -29,6 +29,9 @@ export class RemoteWriter {
   constructor() {
     if (this.isEqual(process.env.DEBUG, 'true')) {
       this.debugEnabled = true;
+      console.log("DEBUG: true");
+    } else {
+      console.log("DEBUG: false");
     }
 
     this.lambdaInstance = LambdaInstanceMetrics.getSingleton();
@@ -39,18 +42,21 @@ export class RemoteWriter {
       isComplete: false
     };
 
-    if (this.isDefined(this.remoteWriteConfig.tenantName)) {
-      this.lambdaInstance.setTenant((this.remoteWriteConfig.tenantName as (string)));
-    }
-
-
     this.remoteWriteConfig.isComplete = this.isDefined(this.remoteWriteConfig.metricsEndpoint);
 
     RemoteWriter.singleton = this;
-    if (this.remoteWriteConfig.isComplete && !this.isEqual(process.env.ASSERTS_LAYER_DISABLED, 'true')) {
-      // Flush once immediately and then write on schedule
-      this.flushMetrics();
-      this.startRemoteWriter();
+    if (this.remoteWriteConfig.isComplete) {
+      console.log("ASSERTS_METRIC_ENDPOINT: " + this.remoteWriteConfig.metricsEndpoint);
+      if (this.isEqual(process.env.ASSERTS_LAYER_DISABLED, 'true')) {
+        console.log("ASSERTS_LAYER_DISABLED: true")
+      } else {
+        console.log("ASSERTS_LAYER_DISABLED: false")
+        // Flush once immediately and then write on schedule
+        this.flushMetrics();
+        this.startRemoteWriter();
+      }
+    } else {
+      console.log("ASSERTS_METRIC_ENDPOINT not set. RemoteWrite disabled");
     }
   }
 
