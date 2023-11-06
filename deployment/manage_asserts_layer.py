@@ -49,7 +49,7 @@ TENANT_NAME = 'ASSERTS_TENANT_NAME'
 PASSWORD = 'ASSERTS_PASSWORD'
 ENV = 'ASSERTS_ENVIRONMENT'
 SITE = 'ASSERTS_SITE'
-DISABLE_PROM_CLIENT = 'ASSERTS_LAYER_DISABLED'
+LAYER_DISABLE_FLAG = 'ASSERTS_LAYER_DISABLED'
 NODE_OPTIONS = 'NODE_OPTIONS'
 DEBUG = 'DEBUG'
 
@@ -67,7 +67,7 @@ variable_names = [
     METRIC_ENDPOINT,
     TENANT_NAME,
     PASSWORD,
-    DISABLE_PROM_CLIENT,
+    LAYER_DISABLE_FLAG,
     DEBUG,
     NODE_OPTIONS,
     ENABLE_TRACING,
@@ -145,7 +145,7 @@ def remove_layer(fn):
 def disable_layer(fn):
     if get_asserts_layer(fn) is not None:
         current_variables = fn['Environment']['Variables']
-        current_variables[DISABLE_PROM_CLIENT] = 'true'
+        current_variables[LAYER_DISABLE_FLAG] = 'true'
         current_variables[ENABLE_TRACING] = 'n'
         update_fn(fn, {'Variables': current_variables}, None)
 
@@ -153,7 +153,7 @@ def disable_layer(fn):
 def enable_layer(fn):
     if get_asserts_layer(fn) is not None:
         current_variables = fn['Environment']['Variables']
-        current_variables[DISABLE_PROM_CLIENT] = 'false'
+        current_variables[LAYER_DISABLE_FLAG] = 'false'
         current_variables[ENABLE_TRACING] = 'y'
         update_fn(fn, {'Variables': current_variables}, None)
     return
